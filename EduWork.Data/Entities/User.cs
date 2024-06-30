@@ -16,15 +16,15 @@ namespace EduWork.Data.Entities
         [StringLength(50)]
         [Required]
         public string Email { get; set; } = string.Empty;
-        public AppRole AppRole { get; set; } = null!;
+        public AppRole? AppRole { get; set; }
         [StringLength(200)]
         [Required]
         public string EntraObjectId { get; set; } = string.Empty;
-        public ICollection<AnnualLeaveRecord> AnnualLeaveRecords { get; set; } = null!;
-        public ICollection<SickLeaveRecord> SickLeaveRecords { get; set; } = null!;
+        public ICollection<AnnualLeaveRecord>? AnnualLeaveRecords { get; set; }
+        public ICollection<SickLeaveRecord>? SickLeaveRecords { get; set; }
         [Required]
         public ICollection<AnnualLeave> AnnualLeaves { get; set; } = null!;
-        public ICollection<UserProjectRole> UserProjectRoles { get; set; } = null!;
-        public ICollection<WorkDay> WorkDays { get; set; } = null!;
+        public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+        public ICollection<WorkDay>? WorkDays { get; set; }
     }
 }

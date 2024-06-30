@@ -10,7 +10,7 @@ namespace EduWork.Data.Entities
         [Required]
         public Project Project { get; set; } = new Project();
         [StringLength(200)]
-        public string Comment { get; set; } = null!;
+        public string? Comment { get; set; }
         [Required]
         public int TimeSpentMinutes { get; set; }
     }

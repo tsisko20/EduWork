@@ -18,14 +18,14 @@ namespace EduWork.Data.Entities
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         [StringLength(200)]
-        public string Description { get; set; } = null!;
+        public string? Description { get; set; }
         public bool IsFinished { get; set; }
         public bool IsEducation { get; set; }
         public bool IsPayable { get; set; }
         [Required]
         [StringLength(200)]
         public string DevopsProjectId { get; set; } = string.Empty;
-        ICollection<ProjectTime> ProjectTime { get; set; } = null!;
-        ICollection<UserProjectRole> UserProjectRoles { get; set; } = null!;
+        ICollection<ProjectTime>? ProjectTime { get; set; }
+        ICollection<UserProjectRole>? UserProjectRoles { get; set; }
     }
 }

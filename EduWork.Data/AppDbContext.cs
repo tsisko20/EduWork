@@ -35,7 +35,23 @@ namespace EduWork.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //FK, PK, INDEX, CASCADE
+            modelBuilder.Entity<AppRole>().HasIndex(x => x.Title).IsUnique();
+
+            modelBuilder.Entity<NonWorkingDay>().HasIndex(x => x.NonWorkingDate).IsUnique();
+
+            modelBuilder.Entity<User>().HasIndex(x => x.Username).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(x => x.EntraObjectId).IsUnique();
+
+            modelBuilder.Entity<Project>().HasIndex(x => x.Title).IsUnique();
+
+            modelBuilder.Entity<ProjectRole>().HasIndex(x => x.Title).IsUnique();
+
+            modelBuilder.Entity<UserProjectRole>().HasIndex(x => new { x.User, x.Project, x.ProjectRole }).IsUnique();
+
+            modelBuilder.Entity<WorkDay>().HasIndex(x => new{x.User, x.WorkDate}).IsUnique();
+
+            modelBuilder.Entity<AnnualLeave>().HasIndex(x => new { x.User, x.Year }).IsUnique();
         }
     }
 }

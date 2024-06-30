@@ -14,9 +14,8 @@ namespace EduWork.Data.Entities
         [Required]
         public string Title { get; set; } = string.Empty;
         [StringLength(200)]
-        [Required]
-        public string Description { get; set; } = string.Empty;
-        public ICollection<User> Users { get; set; } = null!;
+        public string? Description { get; set; }
+        public ICollection<User>? Users { get; set; }
     }
 }
 

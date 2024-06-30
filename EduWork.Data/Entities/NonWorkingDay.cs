@@ -14,9 +14,5 @@ namespace EduWork.Data.Entities
         [StringLength(50)]
         [Required]
         public string Title { get; set; } = string.Empty;
-        [StringLength(50)]
-        [Required]
-        public string Email { get; set; } = string.Empty;
-
     }
 }

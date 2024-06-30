@@ -6,10 +6,10 @@ namespace EduWork.Data.Entities
     {
         public int Id { get; set; }
         [Required]
-        public ICollection<User> Users { get; set; } = null!;
+        public User User { get; set; } = new User();
         [Required]
         public DateOnly WorkDate { get; set; }
-        public ProjectTime ProjectTime { get; set; } = null!;
-        public WorkDayTime WorkDayTime { get; set; } = null!;
+        public ICollection<ProjectTime>? ProjectTimes { get; set; }
+        public ICollection<WorkDayTime>? WorkDayTimes { get; set; }
     }
 }

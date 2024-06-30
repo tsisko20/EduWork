@@ -15,6 +15,6 @@ namespace EduWork.Data.Entities
         [Required]
         public User User { get; set; } = new User();
         [StringLength(200)]
-        public string Comment { get; set; } = null!;
+        public string? Comment { get; set; }
     }
 }
