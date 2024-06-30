@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "identityapp1": {
+      "connectionInfo": "App registration: EduWork.WebAPI.TinSisko, Tenant: EduWork Test (eduworktest.onmicrosoft.com - Microsoft Entra ID)",
+      "secretStore": null,
+      "resourceId": null,
+      "type": "identityapp.secretStore",
+      "connectionId": "AzureAD:ClientSecret"
+    }
+  }
+}
