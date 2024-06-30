@@ -81,7 +81,7 @@ namespace EduWork.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AppRoleId = table.Column<int>(type: "int", nullable: false),
+                    AppRoleId = table.Column<int>(type: "int", nullable: true),
                     EntraObjectId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
@@ -169,7 +169,7 @@ namespace EduWork.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     ProjectId = table.Column<int>(type: "int", nullable: false),
-                    ProjectRoleId = table.Column<int>(type: "int", nullable: false)
+                    ProjectRoleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -327,7 +327,8 @@ namespace EduWork.Data.Migrations
                 name: "IX_UserProjectRoles_UserId_ProjectId_ProjectRoleId",
                 table: "UserProjectRoles",
                 columns: new[] { "UserId", "ProjectId", "ProjectRoleId" },
-                unique: true);
+                unique: true,
+                filter: "[ProjectRoleId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_AppRoleId",

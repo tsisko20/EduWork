@@ -11,8 +11,7 @@ namespace EduWork.Data.Entities
         public int ProjectId { get; set; }
         [Required]
         public Project Project { get; set; } = new Project();
-        [Required]
-        public int ProjectRoleId { get; set; }
-        public ProjectRole ProjectRole { get; set; } = new ProjectRole();
+        public int? ProjectRoleId { get; set; }
+        public ProjectRole? ProjectRole { get; set; }
     }
 }

@@ -263,7 +263,7 @@ namespace EduWork.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AppRoleId")
+                    b.Property<int?>("AppRoleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -308,7 +308,7 @@ namespace EduWork.Data.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProjectRoleId")
+                    b.Property<int?>("ProjectRoleId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -321,7 +321,8 @@ namespace EduWork.Data.Migrations
                     b.HasIndex("ProjectRoleId");
 
                     b.HasIndex("UserId", "ProjectId", "ProjectRoleId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ProjectRoleId] IS NOT NULL");
 
                     b.ToTable("UserProjectRoles");
                 });
@@ -429,8 +430,7 @@ namespace EduWork.Data.Migrations
                     b.HasOne("EduWork.Data.Entities.AppRole", "AppRole")
                         .WithMany("Users")
                         .HasForeignKey("AppRoleId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("AppRole");
                 });
@@ -446,8 +446,7 @@ namespace EduWork.Data.Migrations
                     b.HasOne("EduWork.Data.Entities.ProjectRole", "ProjectRole")
                         .WithMany("UserProjectRoles")
                         .HasForeignKey("ProjectRoleId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EduWork.Data.Entities.User", "User")
                         .WithMany("UserProjectRoles")
