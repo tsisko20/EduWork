@@ -5,8 +5,9 @@ namespace EduWork.Data.Entities
     public class WorkDayTime
     {
         public int Id { get; set; }
+        public int WorkDayId { get; set; }
         [Required]
-        public WorkDay WorkDays { get; set; } = new WorkDay();
+        public WorkDay WorkDay { get; set; } = new WorkDay();
         [Required]
         public TimeOnly StartTime { get; set; }
         [Required]

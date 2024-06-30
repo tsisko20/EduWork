@@ -13,6 +13,7 @@ namespace EduWork.Data.Entities
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         [Required]
+        public int UserId { get; set; }
         public User User { get; set; } = new User();
         [StringLength(200)]
         public string? Comment { get; set; }

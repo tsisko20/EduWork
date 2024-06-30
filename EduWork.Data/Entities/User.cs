@@ -16,6 +16,7 @@ namespace EduWork.Data.Entities
         [StringLength(50)]
         [Required]
         public string Email { get; set; } = string.Empty;
+        public int AppRoleId { get; set; }
         public AppRole? AppRole { get; set; }
         [StringLength(200)]
         [Required]

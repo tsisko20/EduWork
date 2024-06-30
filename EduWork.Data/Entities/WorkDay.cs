@@ -5,6 +5,7 @@ namespace EduWork.Data.Entities
     public class WorkDay
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
         [Required]
         public User User { get; set; } = new User();
         [Required]

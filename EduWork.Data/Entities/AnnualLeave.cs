@@ -11,7 +11,8 @@ namespace EduWork.Data.Entities
     {
         public int Id { get; set; }
         [Required]
-        public User User { get; set; } = new User();
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
         public int Year { get; set; }
         public int TotalLeaveDays { get; set; }
         public int LeftLeaveDays { get; set; }  
