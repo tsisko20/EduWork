@@ -30,7 +30,7 @@ namespace EduWork.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+            //optionsBuilder.UseSqlServer("Server=.;Database=FactoryApp;Trusted_Connection=true;TrustServerCertificate=true;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
