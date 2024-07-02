@@ -15,6 +15,6 @@ namespace EduWork.Data.Entities
         public string Title { get; set; } = string.Empty;
         [StringLength(200)]
         public string? Description { get; set; }
-        public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+        public virtual ICollection<UserProjectRole>? UserProjectRoles { get; set; }
     }
 }

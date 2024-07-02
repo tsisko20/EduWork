@@ -14,7 +14,7 @@ namespace EduWork.Data.Entities
         public DateOnly EndDate { get; set; }
         [Required]
         public int UserId { get; set; }
-        public User User { get; set; } = new User();
+        public virtual User User { get; set; } = new User();
         [StringLength(200)]
         public string? Comment { get; set; }
     }

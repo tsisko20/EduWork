@@ -25,7 +25,7 @@ namespace EduWork.Data.Entities
         [Required]
         [StringLength(200)]
         public string DevopsProjectId { get; set; } = string.Empty;
-        public ICollection<ProjectTime>? ProjectTimes { get; set; }
-        public ICollection<UserProjectRole>? UserProjectRoles { get; set; }
+        public virtual ICollection<ProjectTime>? ProjectTimes { get; set; }
+        public virtual ICollection<UserProjectRole>? UserProjectRoles { get; set; }
     }
 }
