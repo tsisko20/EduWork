@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduWork.WebAPI", "EduWork.WebAPI\EduWork.WebAPI.csproj", "{D8824090-886B-419E-BCBA-449C56E01336}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduWork.WebAPI", "EduWork.WebAPI\EduWork.WebAPI.csproj", "{D8824090-886B-419E-BCBA-449C56E01336}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduWork.Data", "EduWork.Data\EduWork.Data.csproj", "{48895746-EAD0-4D84-8F26-B03B60358CE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduWork.Data", "EduWork.Data\EduWork.Data.csproj", "{48895746-EAD0-4D84-8F26-B03B60358CE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduWork.Domain", "EduWork.Domain\EduWork.Domain.csproj", "{7B6F8008-8294-4C99-B641-13DE5415B229}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduWork.Domain", "EduWork.Domain\EduWork.Domain.csproj", "{7B6F8008-8294-4C99-B641-13DE5415B229}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduWork.Common", "EduWork.Common\EduWork.Common.csproj", "{55A9980B-E45B-4DB7-8DC2-D694CD3636CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{7B6F8008-8294-4C99-B641-13DE5415B229}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B6F8008-8294-4C99-B641-13DE5415B229}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B6F8008-8294-4C99-B641-13DE5415B229}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55A9980B-E45B-4DB7-8DC2-D694CD3636CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55A9980B-E45B-4DB7-8DC2-D694CD3636CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55A9980B-E45B-4DB7-8DC2-D694CD3636CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55A9980B-E45B-4DB7-8DC2-D694CD3636CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

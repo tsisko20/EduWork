@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EduWork.Data;
-using EduWork.Data.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
+using EduWork.Domain.Services;
+using EduWork.Common.DTO;
+
 
 namespace EduWork.WebAPI.Controllers
 {
@@ -14,95 +9,60 @@ namespace EduWork.WebAPI.Controllers
     [ApiController]
     public class WorkDayTimesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly WorkTimeService _workTimeService;
 
-        public WorkDayTimesController(AppDbContext context)
+        public WorkDayTimesController(WorkTimeService workTimeService)
         {
-            _context = context;
+            _workTimeService = workTimeService;
         }
 
         // GET: api/WorkDayTimes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WorkDayTime>>> GetWorkDayTimeRecords()
+        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUsers()
         {
-            return await _context.WorkDayTimeRecords.ToListAsync();
+            return await _workTimeService.GetWorkTimePartsForUsersAsync();
+        }
+        
+        // GET: api/WorkDayTimes/5
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId)
+        {
+            return await _workTimeService.GetWorkTimePartsForUserAsync(userId);
         }
 
         // GET: api/WorkDayTimes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<WorkDayTime>> GetWorkDayTime(int id)
+        [HttpGet("{userId},{m},{y}")]
+        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId, int m, int y)
         {
-            var workDayTime = await _context.WorkDayTimeRecords.FindAsync(id);
-
-            if (workDayTime == null)
-            {
-                return NotFound();
-            }
-
-            return workDayTime;
+            return await _workTimeService.GetWorkTimePartsForUserAsync(userId, m, y);
         }
 
         // PUT: api/WorkDayTimes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutWorkDayTime(int id, WorkDayTime workDayTime)
-        {
-            if (id != workDayTime.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(workDayTime).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!WorkDayTimeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+        [HttpPut("{workTimePart}")]
+        public async Task<IActionResult> PutWorkDayTime(WorkTimePart workTimePart)
+        {         
+            await _workTimeService.PutWorkTimeRecordAsync(workTimePart);
+            return Ok();
         }
 
         // POST: api/WorkDayTimes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<WorkDayTime>> PostWorkDayTime(WorkDayTime workDayTime)
+        public async Task<ActionResult> PostWorkDayTime(SetWorkDayTime workDayTime)
         {
-            _context.WorkDayTimeRecords.Add(workDayTime);
-            await _context.SaveChangesAsync();
+            await _workTimeService.SetWorkTimeRecordAsync(workDayTime.UserId, workDayTime.StartTime, workDayTime.EndTime, workDayTime.Day);
 
-            return CreatedAtAction("GetWorkDayTime", new { id = workDayTime.Id }, workDayTime);
+            return Ok();
         }
 
         // DELETE: api/WorkDayTimes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWorkDayTime(int id)
         {
-            var workDayTime = await _context.WorkDayTimeRecords.FindAsync(id);
-            if (workDayTime == null)
-            {
-                return NotFound();
-            }
-
-            _context.WorkDayTimeRecords.Remove(workDayTime);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            await _workTimeService.DeleteWorkTimeRecordAsync(id);
+            return Ok();
         }
 
-        private bool WorkDayTimeExists(int id)
-        {
-            return _context.WorkDayTimeRecords.Any(e => e.Id == id);
-        }
     }
 }

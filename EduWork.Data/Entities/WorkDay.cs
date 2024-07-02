@@ -7,7 +7,7 @@ namespace EduWork.Data.Entities
         public int Id { get; set; }
         public int UserId { get; set; }
         [Required]
-        public virtual User User { get; set; } = new User();
+        public virtual User User { get; set; } = null!;
         [Required]
         public DateOnly WorkDate { get; set; }
         public virtual ICollection<ProjectTime>? ProjectTimes { get; set; }

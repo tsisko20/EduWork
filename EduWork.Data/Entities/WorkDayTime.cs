@@ -7,7 +7,7 @@ namespace EduWork.Data.Entities
         public int Id { get; set; }
         public int WorkDayId { get; set; }
         [Required]
-        public virtual WorkDay WorkDay { get; set; } = new WorkDay();
+        public virtual WorkDay WorkDay { get; set; } = null!;
         [Required]
         public TimeOnly StartTime { get; set; }
         [Required]
