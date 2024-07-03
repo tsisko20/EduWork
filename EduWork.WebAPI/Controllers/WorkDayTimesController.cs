@@ -15,26 +15,12 @@ namespace EduWork.WebAPI.Controllers
         {
             _workTimeService = workTimeService;
         }
-
-        // GET: api/WorkDayTimes
-        [HttpGet]
-        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUsers()
-        {
-            return await _workTimeService.GetWorkTimePartsForUsersAsync();
-        }
         
         // GET: api/WorkDayTimes/5
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId)
+        [HttpGet]
+        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId, int d, int m, int y)
         {
-            return await _workTimeService.GetWorkTimePartsForUserAsync(userId);
-        }
-
-        // GET: api/WorkDayTimes/5
-        [HttpGet("{userId},{m},{y}")]
-        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId, int m, int y)
-        {
-            return await _workTimeService.GetWorkTimePartsForUserAsync(userId, m, y);
+            return await _workTimeService.GetWorkTimePartsForUserAsync(userId, d, m, y);
         }
 
         // PUT: api/WorkDayTimes/5
