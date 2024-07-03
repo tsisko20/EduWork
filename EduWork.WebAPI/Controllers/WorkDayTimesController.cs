@@ -15,16 +15,15 @@ namespace EduWork.WebAPI.Controllers
         {
             _workTimeService = workTimeService;
         }
-        
-        // GET: api/WorkDayTimes/5
+
+        // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
         [HttpGet]
         public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId, int d, int m, int y)
         {
             return await _workTimeService.GetWorkTimePartsForUserAsync(userId, d, m, y);
         }
 
-        // PUT: api/WorkDayTimes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // PUT
         [HttpPut("{workTimePart}")]
         public async Task<IActionResult> PutWorkDayTime(WorkTimePart workTimePart)
         {         
@@ -32,8 +31,7 @@ namespace EduWork.WebAPI.Controllers
             return Ok();
         }
 
-        // POST: api/WorkDayTimes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST
         [HttpPost]
         public async Task<ActionResult> PostWorkDayTime(SetWorkDayTime workDayTime)
         {
@@ -42,7 +40,7 @@ namespace EduWork.WebAPI.Controllers
             return Ok();
         }
 
-        // DELETE: api/WorkDayTimes/5
+        // DELETE
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWorkDayTime(int id)
         {

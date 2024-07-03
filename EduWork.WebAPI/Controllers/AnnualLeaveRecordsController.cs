@@ -12,10 +12,12 @@ using Microsoft.Identity.Web.Resource;
 
 namespace EduWork.WebAPI.Controllers
 {
+    /*
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    
     public class AnnualLeaveRecordsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -108,5 +110,5 @@ namespace EduWork.WebAPI.Controllers
         {
             return _context.AnnualLeaveRecords.Any(e => e.Id == id);
         }
-    }
+    }*/
 }

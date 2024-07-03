@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web.Resource;
 
 namespace EduWork.WebAPI.Controllers
-{
+{/*
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     [Authorize]
     [Route("api/[controller]")]
@@ -108,5 +108,5 @@ namespace EduWork.WebAPI.Controllers
         {
             return _context.ProjectRoles.Any(e => e.Id == id);
         }
-    }
+    }*/
 }

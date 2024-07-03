@@ -4,7 +4,7 @@ using Microsoft.Identity.Web.Resource;
 using Microsoft.Graph;
 
 namespace EduWork.WebAPI.Controllers
-{
+{/*
     [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     [Authorize]
     [Route("api/[controller]")]
@@ -37,5 +37,5 @@ namespace EduWork.WebAPI.Controllers
             })
             .ToArray();
         }
-    }
+    }*/
 }

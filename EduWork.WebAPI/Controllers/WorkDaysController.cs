@@ -9,7 +9,7 @@ using EduWork.Data;
 using EduWork.Data.Entities;
 
 namespace EduWork.WebAPI.Controllers
-{
+{/*
     [Route("api/[controller]")]
     [ApiController]
     public class WorkDaysController : ControllerBase
@@ -104,5 +104,5 @@ namespace EduWork.WebAPI.Controllers
         {
             return _context.WorkDays.Any(e => e.Id == id);
         }
-    }
+    }*/
 }
