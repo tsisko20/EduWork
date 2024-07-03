@@ -24,7 +24,7 @@ namespace EduWork.Domain.Services
             {
                 query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == year && wdt.WorkDay.WorkDate.Month == month);
             }
-            var workDayTimeRecords = await query.ToListAsync();
+            var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 
             var workDayTimeParts = workDayTimeRecords.Select(wdt => new WorkTimePart
             {

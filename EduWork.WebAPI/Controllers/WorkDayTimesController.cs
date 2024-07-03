@@ -36,7 +36,6 @@ namespace EduWork.WebAPI.Controllers
         public async Task<ActionResult> PostWorkDayTime(SetWorkDayTime workDayTime)
         {
             await _workTimeService.SetWorkTimeRecordAsync(workDayTime.UserId, workDayTime.StartTime, workDayTime.EndTime, workDayTime.Day);
-
             return Ok();
         }
 
