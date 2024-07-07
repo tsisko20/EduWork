@@ -1,4 +1,5 @@
 ﻿using EduWork.Data;
+using EduWork.Domain.Authentication;
 using EduWork.Domain.Services;
 using EduWork.WebAPI.Configurations;
 using Microsoft.AspNetCore.Authentication;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace EduWork.WebAPI.Configurations
 {
@@ -20,6 +22,11 @@ namespace EduWork.WebAPI.Configurations
                 .AddInMemoryTokenCaches();
 
             services.AddControllers();
+            services.AddScoped<WorkTimeService>();
+            services.AddScoped<AppRoleService>();
+            services.AddScoped<Identity>();
+
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             var swaggerOptions = new SwaggerOptions();
             configuration.GetSection(SwaggerOptions.Section).Bind(swaggerOptions);
@@ -64,6 +71,10 @@ namespace EduWork.WebAPI.Configurations
             services.AddDbContext<AppDbContext>(options => {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
+
+            services.AddHttpContextAccessor();
+            services.AddTransient<IIdentity, Identity>();
+
             return services;
         }
     }

@@ -4,9 +4,9 @@ namespace EduWork.Domain.Contracts
 {
     public interface IWorkTimeService
     {
-        Task<List<WorkTimePart>> GetWorkTimePartsForUserAsync(int userId, int? day, int? month, int? year);
-        Task SetWorkTimeRecordAsync(int userId, TimeOnly startTime, TimeOnly endTime, DateOnly day);
-        Task PutWorkTimeRecordAsync(WorkTimePart workTimePart);
+        Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(int userId, int? day, int? month, int? year);
+        Task SetWorkTimeRecordAsync(SetWorkDayTimeDTO workDayTimeDTO);
+        Task PutWorkTimeRecordAsync(WorkTimePartDTO workTimePart);
         Task DeleteWorkTimeRecordAsync(int id);
         
     }

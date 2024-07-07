@@ -10,8 +10,6 @@ builder.Services.AddServices(builder.Configuration);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
-builder.Services.AddScoped<WorkTimeService>();
-
 var app = builder.Build();
 
 app.Configure(app.Environment, builder.Configuration);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EduWork.Common.DTO
 {
-    public record WorkTimePart
+    public record WorkTimePartDTO
     {
         public int Id { get; set; }
         public TimeOnly StartTime { get; set; }

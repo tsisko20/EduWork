@@ -4,12 +4,13 @@ using EduWork.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using EduWork.Data.Entities;
 using System.Linq;
+using AutoMapper;
 
 namespace EduWork.Domain.Services
 {
-    public class WorkTimeService(AppDbContext context) : IWorkTimeService
+    public class WorkTimeService(AppDbContext context, IMapper mapper) : IWorkTimeService
     {   
-        public async Task<List<WorkTimePart>> GetWorkTimePartsForUserAsync(int userId, int? day = null, int? month = null, int? year = null)
+        public async Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(int userId, int? day = null, int? month = null, int? year = null)
         {
             var query = context.WorkDayTimeRecords
                 .Include(wdt => wdt.WorkDay)
@@ -26,43 +27,39 @@ namespace EduWork.Domain.Services
             }
             var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 
-            var workDayTimeParts = workDayTimeRecords.Select(wdt => new WorkTimePart
+            if(workDayTimeRecords.Count == 0)
             {
-                Id = wdt.Id,
-                WorkDate = wdt.WorkDay.WorkDate,
-                StartTime = wdt.StartTime,
-                EndTime = wdt.EndTime
-            }).ToList();
+                throw new ArgumentException("There is no WorkTimeRecord with provided userId and time.");
+            }
+
+            var workDayTimeParts = mapper.Map<List<WorkTimePartDTO>>(workDayTimeRecords);
 
             return workDayTimeParts;
         }
 
-        public async Task SetWorkTimeRecordAsync(int userId, TimeOnly startTime, TimeOnly endTime, DateOnly day)
+        public async Task SetWorkTimeRecordAsync(SetWorkDayTimeDTO workDayTimeDTO)
         {
             var workDay = await context.WorkDays
                 .Include(wd => wd.WorkDayTimes)
-                .FirstOrDefaultAsync(wd => wd.UserId == userId && wd.WorkDate == day);
+                .FirstOrDefaultAsync(wd => wd.UserId == workDayTimeDTO.UserId && wd.WorkDate == workDayTimeDTO.WorkDate);
 
             if (workDay == null) {
-                workDay = new WorkDay
-                {
-                    UserId = userId,
-                    WorkDate = day,
-                    WorkDayTimes = new List<WorkDayTime>()
-                };
+                workDay = mapper.Map<WorkDay>(workDayTimeDTO);
+                workDay.WorkDayTimes = new List<WorkDayTime>();
                 await context.WorkDays.AddAsync(workDay);
             }
+            
             var workDayTime = new WorkDayTime
             {
                 WorkDay = workDay,
-                StartTime = startTime,
-                EndTime = endTime
+                StartTime = workDayTimeDTO.StartTime,
+                EndTime = workDayTimeDTO.EndTime
             };
             workDay.WorkDayTimes?.Add(workDayTime);
             await context.SaveChangesAsync();
         }
 
-        public async Task PutWorkTimeRecordAsync(WorkTimePart workTimePart)
+        public async Task PutWorkTimeRecordAsync(WorkTimePartDTO workTimePart)
         {
             var workDayTimeRecord = await context.WorkDayTimeRecords
                 .Include(wd => wd.WorkDay)

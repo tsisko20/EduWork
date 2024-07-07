@@ -18,14 +18,14 @@ namespace EduWork.WebAPI.Controllers
 
         // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
         [HttpGet]
-        public async Task<ActionResult<List<WorkTimePart>>> GetWorkDayTimeForUser(int userId, int d, int m, int y)
+        public async Task<ActionResult<List<WorkTimePartDTO>>> GetWorkDayTimeForUser(int userId, int d, int m, int y)
         {
             return await _workTimeService.GetWorkTimePartsForUserAsync(userId, d, m, y);
         }
 
         // PUT
         [HttpPut("{workTimePart}")]
-        public async Task<IActionResult> PutWorkDayTime(WorkTimePart workTimePart)
+        public async Task<IActionResult> PutWorkDayTime(WorkTimePartDTO workTimePart)
         {         
             await _workTimeService.PutWorkTimeRecordAsync(workTimePart);
             return Ok();
@@ -33,9 +33,9 @@ namespace EduWork.WebAPI.Controllers
 
         // POST
         [HttpPost]
-        public async Task<ActionResult> PostWorkDayTime(SetWorkDayTime workDayTime)
+        public async Task<ActionResult> PostWorkDayTime(SetWorkDayTimeDTO workDayTime)
         {
-            await _workTimeService.SetWorkTimeRecordAsync(workDayTime.UserId, workDayTime.StartTime, workDayTime.EndTime, workDayTime.Day);
+            await _workTimeService.SetWorkTimeRecordAsync(workDayTime);
             return Ok();
         }
 
