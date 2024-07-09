@@ -14,6 +14,12 @@ var app = builder.Build();
 
 app.Configure(app.Environment, builder.Configuration);
 
+app.UseCors(x => x
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true) // allow any origin
+                    .AllowCredentials()); // allow credentials
+
 app.MapControllers();
 
 app.Run();

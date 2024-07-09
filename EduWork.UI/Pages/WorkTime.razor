@@ -1,0 +1,48 @@
+﻿@page "/worktime"
+@using EduWork.Common.DTO
+
+<PageTitle>Radno vrijeme</PageTitle>
+
+<h3 style="text-align:center">Upravljanje radnim vremenom</h3>
+
+<div>
+    <div >
+        <h4 style="margin-top:50px">Unos radnog vremena:</h4>
+        Odaberite dan: <br />
+        <input style="margin-top:5px; margin-bottom:15px" @bind=workDay type="date" /> <br />
+        Unesite odsječak radnog vremena: <br />
+        <input style="margin-top:5px " @bind=startTimeInput /> - <input @bind=endTimeInput /> <br />
+        <input style="margin-top:15px " @onclick=saveWorkTimeRecord type="button" value="Unesi" />
+        <p @bind=_response></p>
+    </div>
+    <div>
+        <h4 style="margin-top:50px">Vremenski odsječci za odabrani dan:</h4>
+        
+
+    </div>
+</div>
+
+@code {
+    public DateOnly workDay;
+    public string startTimeInput;
+    public string endTimeInput;
+    public string _response;
+    void saveWorkTimeRecord()
+    {
+        TimeOnly startTime = TimeOnly.Parse(startTimeInput);
+        TimeOnly endTime = TimeOnly.Parse(endTimeInput);
+        var workTimePart = new SetWorkDayTimeDTO
+        {
+            UserId = 1,
+            StartTime = startTime,
+            EndTime = endTime,
+            WorkDate = workDay
+
+
+        };
+
+       
+
+
+    }
+}
