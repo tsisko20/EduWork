@@ -1,0 +1,38 @@
+﻿@page "/worktime/input"
+@using EduWork.Common.DTO
+@inject HttpClient Http
+<h4 style="margin-top:50px">Unos radnog vremena:</h4>
+<EditForm Model="workTimePart" OnValidSubmit="saveWorkTimeRecord">
+    <DataAnnotationsValidator/>
+    <div class="form-group">
+        <label for="workDate">Odaberite dan:</label> <br />
+        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" />
+        <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
+        <label>Unesite odsječak radnog vremena:</label><br />
+        <label for="startTime">Početak:</label>
+        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" />
+        <ValidationMessage For="@(() => workTimePart.StartTime)" /><br />
+        <label for="endTime">Završetak:</label>
+        <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" />
+        <ValidationMessage For="@(() => workTimePart.EndTime)" />
+
+    </div>
+    <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
+   
+</EditForm>
+
+@code {
+    SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
+    {
+            WorkDate = DateOnly.FromDateTime(DateTime.Now),
+            StartTime = TimeOnly.FromDateTime(DateTime.Now)
+    };
+    List<WorkTimePartDTO> workTimes = new List<WorkTimePartDTO>();
+    async Task saveWorkTimeRecord()
+    {
+    }
+    
+
+
+
+    }
