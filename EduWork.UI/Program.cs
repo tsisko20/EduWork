@@ -13,7 +13,7 @@ builder.Services.AddScoped(sp =>
     authorizationMessageHandler.InnerHandler = new HttpClientHandler();
     authorizationMessageHandler = authorizationMessageHandler.ConfigureHandler(
         authorizedUrls: new[] { builder.Configuration["DownstreamApi:BaseUrl"] },
-        scopes: new[] { builder.Configuration["DownstreamApi:Scopes"] });
+        scopes: new[] { builder.Configuration["DownstreamApi:Scope"] });
     return new HttpClient(authorizationMessageHandler)
     {
         BaseAddress = new Uri(builder.Configuration["DownstreamApi:BaseUrl"] ?? string.Empty)
@@ -24,7 +24,7 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration["DownstreamApi:Scopes"]);
+    options.ProviderOptions.DefaultAccessTokenScopes.Add(builder.Configuration["DownstreamApi:Scope"]);
 });
 
 await builder.Build().RunAsync();
