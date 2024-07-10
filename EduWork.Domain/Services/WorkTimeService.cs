@@ -10,27 +10,24 @@ namespace EduWork.Domain.Services
 {
     public class WorkTimeService(AppDbContext context, IMapper mapper) : IWorkTimeService
     {   
-        public async Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(GetWorkTimePartsDTO getWorkTimeParts)
+        public async Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(RequestWorkTimePartsDTO getWorkTimeParts)
         {
             var query = context.WorkDayTimeRecords
                 .Include(wdt => wdt.WorkDay)
                 .Where(wdt => wdt.WorkDay.UserId == getWorkTimeParts.UserId);
 
-            if (getWorkTimeParts.Day != 0 && getWorkTimeParts.Month != 0 && getWorkTimeParts.Year != 0)
+            if (getWorkTimeParts.Day > 0 && getWorkTimeParts.Month > 0 && getWorkTimeParts.Year > 0)
             {
                 var date = new DateOnly(getWorkTimeParts.Year ?? default(int), getWorkTimeParts.Month ?? default(int), getWorkTimeParts.Day ?? default(int));
                 query = query.Where(wdt => wdt.WorkDay.WorkDate == date);
             }
-            else if (getWorkTimeParts.Day == 0 && getWorkTimeParts.Month != 0 && getWorkTimeParts.Year != 0)
+            else if (getWorkTimeParts.Day == null && getWorkTimeParts.Month > 0 && getWorkTimeParts.Year > 0)
             {
                 query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year && wdt.WorkDay.WorkDate.Month == getWorkTimeParts.Month);
             }
             var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 
-            if(workDayTimeRecords.Count == 0)
-            {
-                throw new ArgumentException("There is no WorkTimeRecord with provided userId and time.");
-            }
+            
 
             var workDayTimeParts = mapper.Map<List<WorkTimePartDTO>>(workDayTimeRecords);
 

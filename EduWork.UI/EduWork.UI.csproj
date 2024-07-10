@@ -8,7 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="WorkTime\CurrentDayWorkTimeRecords.razor" />
+    <None Remove="WorkTime\WorkTimeRecords.razor.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WorkTime\WorkTimeRecords.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,10 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EduWork.Common\EduWork.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="WorkTime\CurrentDayWorkTimeRecords.razor" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@
 
 <PageTitle>Radno vrijeme</PageTitle>
 
-<h3 style="text-align:center">Upravljanje radnim vremenom</h3>
+<h4 style="text-align:center">Upravljanje radnim vremenom</h4>
 
 <div class="container">
     <div class="row">
@@ -11,7 +11,7 @@
             <InputWorkTimeRecordForm OnDateChanged="DateChanged"></InputWorkTimeRecordForm>
         </div>
         <div class="col-sm">
-            <CurrentDayWorkTimeRecords></CurrentDayWorkTimeRecords>
+            <WorkTimeRecords request="request" @ref="child"></WorkTimeRecords>
         </div>
         
     </div>
@@ -23,9 +23,23 @@
 
 
 @code {
+    WorkTimeRecords child;
+    RequestWorkTimePartsDTO request = new RequestWorkTimePartsDTO
+        {
+            UserId = 1,
+            Day = DateTime.Now.Day,
+            Month = DateTime.Now.Month,
+            Year = DateTime.Now.Year
+        };
     DateOnly selectedDate;
     public async void DateChanged(DateOnly _selectedDate)
     {
         selectedDate = _selectedDate;
-    }
+        request.UserId = 1;
+        request.Day = selectedDate.Day;
+        request.Month = selectedDate.Month;
+        request.Year = selectedDate.Year;
+        await child.Update();
+
+    } 
 }

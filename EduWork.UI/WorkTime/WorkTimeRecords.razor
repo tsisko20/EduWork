@@ -1,0 +1,67 @@
+﻿@using EduWork.Common.DTO
+@inject HttpClient Http
+<h4 style="margin-top:50px">Vremenski odsječci za @request.Day/@request.Month/@request.Year:</h4>
+
+    @if (workTimeList == null)
+    {
+        <p>Učitavanje...</p>
+    }
+    else if (workTimeList.Count == 0)
+    {
+        <p>Nema vremenskih odsječaka za odabrani dan.</p>
+    }
+    else
+    {
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Time</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var element in workTimeList)
+                            {
+                                <tr>
+                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" /></td> 
+                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
+                                    <td><button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i>Delete</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+               
+    }
+    
+
+@code {
+    public TimeOnly time;
+    [Parameter]
+    public RequestWorkTimePartsDTO request { get; set; }
+    List<WorkTimePartDTO> workTimeList = new List<WorkTimePartDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Update();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Update();
+    }
+
+    public async Task Update()
+    {
+        try
+        {
+            workTimeList = await Http.GetFromJsonAsync<List<WorkTimePartDTO>>($"api/WorkDayTimes?UserId={request.UserId}&Day={request.Day}&Month={request.Month}&Year={request.Year}");
+            StateHasChanged(); 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}

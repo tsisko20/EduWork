@@ -1,19 +1,19 @@
-﻿@page "/worktime/input"
+﻿
 @using EduWork.Common.DTO
 @inject HttpClient Http
 <h4 style="margin-top:50px">Unos radnog vremena:</h4>
 <EditForm Model="workTimePart" OnValidSubmit="saveWorkTimeRecord">
     <DataAnnotationsValidator/>
-    <div class="form-group">
-        <label for="workDate">Odaberite dan:</label> <br />
-        <InputDate id="workDate" @bind-Value="selectedDate" class="form-control"/>
+    <div class="form-group" style="margin-left:20px">
+        <label style="margin-bottom:10px" for="workDate">Odaberite dan:</label> <br />
+        <InputDate id="workDate" @bind-Value="selectedDate" class="form-control" style="max-width:fit-content; margin-left:20px" />
         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
-        <label>Unesite odsječak radnog vremena:</label><br />
-        <label for="startTime">Početak:</label>
-        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" />
-        <ValidationMessage For="@(() => workTimePart.StartTime)" /><br />
-        <label for="endTime">Završetak:</label>
-        <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" />
+        <label style="margin-bottom:10px">Unesite odsječak radnog vremena:</label><br />
+        
+        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content; margin-left:40px" />
+        <ValidationMessage For="@(() => workTimePart.StartTime)" />
+        -
+        <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
         <ValidationMessage For="@(() => workTimePart.EndTime)" />
 
     </div>
@@ -32,6 +32,7 @@
             UserId = 1,
             StartTime = TimeOnly.FromDateTime(DateTime.Now)
     };
+    
     public DateOnly selectedDate
     {
         get => workTimePart.WorkDate;
@@ -47,8 +48,5 @@
         var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
         Console.WriteLine(response.StatusCode);
     }
-
-
-
 
     }
