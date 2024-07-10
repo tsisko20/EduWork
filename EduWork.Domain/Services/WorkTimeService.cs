@@ -10,20 +10,20 @@ namespace EduWork.Domain.Services
 {
     public class WorkTimeService(AppDbContext context, IMapper mapper) : IWorkTimeService
     {   
-        public async Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(int userId, int? day = null, int? month = null, int? year = null)
+        public async Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(GetWorkTimePartsDTO getWorkTimeParts)
         {
             var query = context.WorkDayTimeRecords
                 .Include(wdt => wdt.WorkDay)
-                .Where(wdt => wdt.WorkDay.UserId == userId);
+                .Where(wdt => wdt.WorkDay.UserId == getWorkTimeParts.UserId);
 
-            if (day != 0 && month != 0 && year != 0)
+            if (getWorkTimeParts.Day != 0 && getWorkTimeParts.Month != 0 && getWorkTimeParts.Year != 0)
             {
-                var date = new DateOnly(year ?? default(int), month ?? default(int), day ?? default(int));
+                var date = new DateOnly(getWorkTimeParts.Year ?? default(int), getWorkTimeParts.Month ?? default(int), getWorkTimeParts.Day ?? default(int));
                 query = query.Where(wdt => wdt.WorkDay.WorkDate == date);
             }
-            else if (day == 0 && month != 0 && year != 0)
+            else if (getWorkTimeParts.Day == 0 && getWorkTimeParts.Month != 0 && getWorkTimeParts.Year != 0)
             {
-                query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == year && wdt.WorkDay.WorkDate.Month == month);
+                query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year && wdt.WorkDay.WorkDate.Month == getWorkTimeParts.Month);
             }
             var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 

@@ -18,9 +18,9 @@ namespace EduWork.WebAPI.Controllers
 
         // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
         [HttpGet]
-        public async Task<ActionResult<List<WorkTimePartDTO>>> GetWorkDayTimeForUser(int userId, int d, int m, int y)
+        public async Task<ActionResult<List<WorkTimePartDTO>>> GetWorkDayTimeForUser(GetWorkTimePartsDTO getWorkTimeParts)
         {
-            return await _workTimeService.GetWorkTimePartsForUserAsync(userId, d, m, y);
+            return await _workTimeService.GetWorkTimePartsForUserAsync(getWorkTimeParts);
         }
 
         // PUT

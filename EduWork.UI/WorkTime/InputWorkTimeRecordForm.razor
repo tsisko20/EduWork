@@ -6,7 +6,7 @@
     <DataAnnotationsValidator/>
     <div class="form-group">
         <label for="workDate">Odaberite dan:</label> <br />
-        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" />
+        <InputDate id="workDate" @bind-Value="selectedDate" class="form-control"/>
         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
         <label>Unesite odsječak radnog vremena:</label><br />
         <label for="startTime">Početak:</label>
@@ -22,16 +22,32 @@
 </EditForm>
 
 @code {
+    [Parameter] public EventCallback<DateOnly> OnDateChanged { get; set; }
+
+
+
     SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
     {
             WorkDate = DateOnly.FromDateTime(DateTime.Now),
+            UserId = 1,
             StartTime = TimeOnly.FromDateTime(DateTime.Now)
     };
-    List<WorkTimePartDTO> workTimes = new List<WorkTimePartDTO>();
+    public DateOnly selectedDate
+    {
+        get => workTimePart.WorkDate;
+        set
+        {
+            workTimePart.WorkDate = value;
+            OnDateChanged.InvokeAsync(value);
+        }
+    }
+
     async Task saveWorkTimeRecord()
     {
+        var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
+        Console.WriteLine(response.StatusCode);
     }
-    
+
 
 
 
