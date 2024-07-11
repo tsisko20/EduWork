@@ -1,6 +1,6 @@
 ﻿@using EduWork.Common.DTO
 @inject HttpClient Http
-<h4 style="margin-top:50px">Vremenski odsječci za @request.Day/@request.Month/@request.Year:</h4>
+<h4 >Vremenski odsječci za @request.Day/@request.Month/@request.Year:</h4>
 
     @if (workTimeList == null)
     {
@@ -12,26 +12,42 @@
     }
     else
     {
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th scope="col">Start Time</th>
-                                <th scope="col">End Time</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var element in workTimeList)
-                            {
-                                <tr>
-                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" /></td> 
-                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
-                                    <td><button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i>Delete</button></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-               
+    <div class="tableScroll">
+            <table class="table table-bordered table-striped ">
+                <thead class="text-white">
+                    <tr>
+                        <th>#</th>
+                        <th scope="col">Start Time</th>
+                        <th scope="col">End Time</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var element in updatedList)
+                    {
+                        <tr>
+                        <td>@(updatedList.IndexOf(element) + 1)</td>
+                            <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" /></td>
+                            <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
+                            <td>
+                                <div class="form-check form-switch text-center">
+                                    <input @onclick="() => SetDelete(element.Id)" type="checkbox" class="form-check-input unfocus">
+                                </div>
+
+                            </td>
+                        </tr>
+                    }
+                    
+                            
+                       
+                </tbody>
+        </table>
+
+    </div>
+    <div style="text-align:center; margin-top:10px">
+    <button type="button" class="btn btn-primary unfocus" style="margin-right:15px">Primjeni</button>
+        <button type="button" class="btn btn-secondary unfocus">Odbaci</button>
+    </div>
     }
     
 
@@ -40,7 +56,7 @@
     [Parameter]
     public RequestWorkTimePartsDTO request { get; set; }
     List<WorkTimePartDTO> workTimeList = new List<WorkTimePartDTO>();
-
+    List<UpdateWorkTimePartsDTO> updatedList = new List<UpdateWorkTimePartsDTO>();
     protected override async Task OnInitializedAsync()
     {
         await Update();
@@ -48,7 +64,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await Update();
+
     }
 
     public async Task Update()
@@ -56,12 +72,30 @@
         try
         {
             workTimeList = await Http.GetFromJsonAsync<List<WorkTimePartDTO>>($"api/WorkDayTimes?UserId={request.UserId}&Day={request.Day}&Month={request.Month}&Year={request.Year}");
+            updatedList.Clear();
+            foreach (var part in workTimeList)
+            {
+                var updatePart = new UpdateWorkTimePartsDTO
+                    {
+                        Id = part.Id,
+                        StartTime = part.StartTime,
+                        EndTime = part.EndTime,
+                        WorkDate = part.WorkDate
+                    };
+                updatedList.Add(updatePart);
+            }
             StateHasChanged(); 
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
         }
+    }
+
+    private void SetDelete(int id)
+    {
+        var item = updatedList.First(x => x.Id == id);
+        item.Delete = !item.Delete;
     }
 
 }

@@ -1,3 +1,59 @@
-﻿td, th{
-    text-align:center;
+﻿td, th {
+    text-align: center; /* Center horizontally */
+    vertical-align: middle; /* Center vertically */
+    display:table-cell;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #E1341E;
+    border-color: #E1341E;
+}
+
+
+    .form-switch .form-check-input:focus {
+    border-color: rgba(0, 0, 0, 0.25);
+    outline: 0;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    border: none;
+}
+
+.form-check {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+   padding-left:2.5rem;
+    
+}
+
+thead {
+    background-color: #492567;
+}
+
+.tableScroll {
+    overflow: auto;
+    max-height: 300px;
+}
+
+.tableScroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 8px 16px;
+}
+
+th {
+    background: #492567;
+}
+
+*:focus, *:active {
+    outline: none ;
+    box-shadow: none ;
 }

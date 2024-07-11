@@ -6,12 +6,18 @@
 <h4 style="text-align:center">Upravljanje radnim vremenom</h4>
 
 <div class="container">
-    <div class="row">
-        <div class="col-sm">
-            <InputWorkTimeRecordForm OnDateChanged="DateChanged"></InputWorkTimeRecordForm>
+    <div class="row g-2">
+        <div style="margin-top:50px; "class="col-md-6">
+            
+                <InputWorkTimeRecord OnDateChanged="DateChanged" OnNewRecord="UpdateTable"></InputWorkTimeRecord>
+            
+            
         </div>
-        <div class="col-sm">
-            <WorkTimeRecords request="request" @ref="child"></WorkTimeRecords>
+        <div style="margin-top:50px;" class=" col-md-6">
+           
+                <WorkTimeRecords request="request" @ref="child"></WorkTimeRecords>
+          
+            
         </div>
         
     </div>
@@ -21,9 +27,8 @@
 </div>
 
 
-
 @code {
-    WorkTimeRecords child;
+    WorkTimeRecords? child;
     RequestWorkTimePartsDTO request = new RequestWorkTimePartsDTO
         {
             UserId = 1,
@@ -39,7 +44,12 @@
         request.Day = selectedDate.Day;
         request.Month = selectedDate.Month;
         request.Year = selectedDate.Year;
-        await child.Update();
+        await child!.Update();
 
     } 
+
+    public async void UpdateTable()
+    {
+        await child!.Update();
+    }
 }

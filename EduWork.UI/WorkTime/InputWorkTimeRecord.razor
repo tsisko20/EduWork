@@ -1,29 +1,35 @@
 ﻿
 @using EduWork.Common.DTO
 @inject HttpClient Http
-<h4 style="margin-top:50px">Unos radnog vremena:</h4>
+<div style="text-align:left;">
+<h4>Unos radnog vremena:</h4>
 <EditForm Model="workTimePart" OnValidSubmit="saveWorkTimeRecord">
     <DataAnnotationsValidator/>
-    <div class="form-group" style="margin-left:20px">
-        <label style="margin-bottom:10px" for="workDate">Odaberite dan:</label> <br />
-        <InputDate id="workDate" @bind-Value="selectedDate" class="form-control" style="max-width:fit-content; margin-left:20px" />
-        <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
-        <label style="margin-bottom:10px">Unesite odsječak radnog vremena:</label><br />
+    
+    <div class="form-group" >
+        <label  for="workDate">Odaberite dan:</label> <br />
+            <button type="button" @onclick="() => ChangeDate(-1)" class="chevron"><span><i class="fa fa-chevron-left"></i></span></button>
         
-        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content; margin-left:40px" />
+        <InputDate id="workDate" @bind-Value="selectedDate" class="form-control" style="display:inline-block; max-width:fit-content;" />
+            <button type="button" @onclick="() => ChangeDate(1)" class="chevron"><span><i class="fa fa-chevron-right"></i></span></button>
+        <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
+                
+        <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
+        
+        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content; " />
         <ValidationMessage For="@(() => workTimePart.StartTime)" />
         -
         <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
         <ValidationMessage For="@(() => workTimePart.EndTime)" />
 
     </div>
-    <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
-   
+        <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
+    
 </EditForm>
-
+</div>
 @code {
     [Parameter] public EventCallback<DateOnly> OnDateChanged { get; set; }
-
+    [Parameter] public EventCallback OnNewRecord { get; set; }
 
 
     SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
@@ -32,7 +38,7 @@
             UserId = 1,
             StartTime = TimeOnly.FromDateTime(DateTime.Now)
     };
-    
+
     public DateOnly selectedDate
     {
         get => workTimePart.WorkDate;
@@ -47,6 +53,12 @@
     {
         var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
         Console.WriteLine(response.StatusCode);
+        await OnNewRecord.InvokeAsync();
+    }
+
+    private void ChangeDate(int change)
+    {
+        selectedDate = selectedDate.AddDays(change);
     }
 
     }
