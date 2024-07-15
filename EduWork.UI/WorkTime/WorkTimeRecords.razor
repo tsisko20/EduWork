@@ -1,4 +1,6 @@
 ﻿@using EduWork.Common.DTO
+@using Newtonsoft.Json
+@using System.Text
 @inject HttpClient Http
 <h4 >Vremenski odsječci za @request.Day/@request.Month/@request.Year:</h4>
 
@@ -12,6 +14,7 @@
     }
     else
     {
+    <p>Ukupno odrađenih sati: @FormatTimeSpan(CalculateTotalTime())</p>
     <div class="tableScroll">
             <table class="table table-bordered table-striped ">
                 <thead class="text-white">
@@ -31,7 +34,7 @@
                             <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
                             <td>
                                 <div class="form-check form-switch text-center">
-                                    <input @onclick="() => SetDelete(element.Id)" type="checkbox" class="form-check-input unfocus">
+                                    <input @onclick="() => SetDelete(element.Id)" type="checkbox" class="form-check-input" checked="@element.Delete">
                                 </div>
 
                             </td>
@@ -45,27 +48,27 @@
 
     </div>
     <div style="text-align:center; margin-top:10px">
-    <button type="button" class="btn btn-primary unfocus" style="margin-right:15px">Primjeni</button>
+        <button type="button" @onclick="() => ApplyUpdates()" class=" btn btn-primary unfocus" style="margin-right:15px">Primjeni</button>
         <button type="button" class="btn btn-secondary unfocus">Odbaci</button>
     </div>
     }
-    
+
+
 
 @code {
-    public TimeOnly time;
     [Parameter]
-    public RequestWorkTimePartsDTO request { get; set; }
-    List<WorkTimePartDTO> workTimeList = new List<WorkTimePartDTO>();
+    public RequestWorkTimePartsDTO? request { get; set; }
+    List<WorkTimePartDTO>? workTimeList;
     List<UpdateWorkTimePartsDTO> updatedList = new List<UpdateWorkTimePartsDTO>();
+    public TimeSpan TotalWorkTime { get; private set; } = TimeSpan.Zero;
+    
+
     protected override async Task OnInitializedAsync()
     {
         await Update();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
 
-    }
 
     public async Task Update()
     {
@@ -84,6 +87,7 @@
                     };
                 updatedList.Add(updatePart);
             }
+            CalculateTotalTime();
             StateHasChanged(); 
         }
         catch (Exception ex)
@@ -97,5 +101,75 @@
         var item = updatedList.First(x => x.Id == id);
         item.Delete = !item.Delete;
     }
+
+    public TimeSpan CalculateTotalTime()
+    {
+        TotalWorkTime = TimeSpan.Zero;
+        foreach (var element in updatedList)
+        {
+            if (!element.Delete) // Consider only elements that are not marked for deletion
+            {
+                if (element?.StartTime != null && element?.EndTime != null)
+                {
+                    DateTime startDateTime = new DateTime(
+                        1, 1, 1, element.StartTime.Hour, element.StartTime.Minute, element.StartTime.Second);
+
+                    DateTime endDateTime = new DateTime(
+                        1, 1, 1, element.EndTime.Hour, element.EndTime.Minute, element.EndTime.Second);
+
+                    TotalWorkTime += endDateTime - startDateTime;
+                }
+            }
+        }
+        return TotalWorkTime;
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        TimeSpan eightHours = TimeSpan.FromHours(8);
+        return $"{(int)timeSpan.TotalHours}:{timeSpan:mm}";
+    }
+
+    private async void ApplyUpdates()
+    {
+        List<UpdateWorkTimePartsDTO> differentElements = new List<UpdateWorkTimePartsDTO>();
+        List<int> deleteElements = new List<int>();
+        foreach (var element in updatedList)
+        {
+            bool changed = false;
+            foreach (var workTime in workTimeList)
+            {
+                if (element.Id == workTime.Id && element.StartTime == workTime.StartTime && element.EndTime == workTime.EndTime)
+                {
+                    changed = true;
+                    break;
+                }
+            }
+            if (!changed)
+            {
+                differentElements.Add(element);
+            }
+            if (element.Delete)
+            {
+                deleteElements.Add(element.Id);
+                element.Delete = false;
+            }
+        }
+
+        var updateResponse = await Http.PutAsJsonAsync("api/WorkDayTimes", differentElements);
+        var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("https://localhost:7001/api/WorkDayTimes"),
+                Content = new StringContent(JsonConvert.SerializeObject(deleteElements), Encoding.UTF8, "application/json")
+            };
+        var deleteResponse = await Http.SendAsync(request);
+        //StateHasChanged();
+        await Update();
+        //string updateResponseString = updateResponse.Content.ReadAsStringAsync().ToString();
+        string mergedResponse = updateResponse.Content.ReadAsStringAsync().ToString() + "\n" + deleteResponse.Content.ReadAsStringAsync().ToString();
+        
+    }
+    
 
 }

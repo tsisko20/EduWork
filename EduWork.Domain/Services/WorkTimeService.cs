@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using EduWork.Data.Entities;
 using System.Linq;
 using AutoMapper;
+using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace EduWork.Domain.Services
 {
@@ -34,14 +36,39 @@ namespace EduWork.Domain.Services
             return workDayTimeParts;
         }
 
-        public async Task SetWorkTimeRecordAsync(SetWorkDayTimeDTO workDayTimeDTO)
+        public async Task SetWorkTimeRecordAsync(SetWorkDayTimeDTO setWorkDayTimeDTO)
         {
             var workDay = await context.WorkDays
                 .Include(wd => wd.WorkDayTimes)
-                .FirstOrDefaultAsync(wd => wd.UserId == workDayTimeDTO.UserId && wd.WorkDate == workDayTimeDTO.WorkDate);
+                .FirstOrDefaultAsync(wd => wd.UserId == setWorkDayTimeDTO.UserId && wd.WorkDate == setWorkDayTimeDTO.WorkDate);
 
-            if (workDay == null) {
-                workDay = mapper.Map<WorkDay>(workDayTimeDTO);
+            if (setWorkDayTimeDTO.StartTime >= setWorkDayTimeDTO.EndTime)
+            {
+                throw new ArgumentException($"Početno vrijeme ne smije biti veće ili jednako završnom.");
+            }
+
+            if (workDay != null) {
+                RequestWorkTimePartsDTO getWorkTimeParts = new RequestWorkTimePartsDTO { 
+                UserId = setWorkDayTimeDTO.UserId,
+                Day = setWorkDayTimeDTO.WorkDate.Day,
+                Month = setWorkDayTimeDTO.WorkDate.Month,
+                Year = setWorkDayTimeDTO.WorkDate.Year,
+                };
+                List<WorkTimePartDTO> list = await GetWorkTimePartsForUserAsync(getWorkTimeParts);
+                foreach(WorkTimePartDTO element in list)
+                {
+                    if((setWorkDayTimeDTO.StartTime>element.StartTime && setWorkDayTimeDTO.StartTime < element.EndTime) ||
+                       (setWorkDayTimeDTO.EndTime > element.StartTime && setWorkDayTimeDTO.EndTime < element.EndTime) ||
+                       (setWorkDayTimeDTO.StartTime < element.StartTime && setWorkDayTimeDTO.EndTime > element.EndTime) ||
+                       (setWorkDayTimeDTO.StartTime == element.StartTime || setWorkDayTimeDTO.EndTime == element.EndTime))
+                    {
+                        throw new ArgumentException($"Uneseno vrijeme se preklapa s već postojećim odsječkom: {element.StartTime}-{element.EndTime}.");
+                    }
+                }
+                
+            }
+            else if (workDay == null) {
+                workDay = mapper.Map<WorkDay>(setWorkDayTimeDTO);
                 workDay.WorkDayTimes = new List<WorkDayTime>();
                 await context.WorkDays.AddAsync(workDay);
             }
@@ -49,41 +76,54 @@ namespace EduWork.Domain.Services
             var workDayTime = new WorkDayTime
             {
                 WorkDay = workDay,
-                StartTime = workDayTimeDTO.StartTime,
-                EndTime = workDayTimeDTO.EndTime
+                StartTime = setWorkDayTimeDTO.StartTime,
+                EndTime = setWorkDayTimeDTO.EndTime
             };
             workDay.WorkDayTimes?.Add(workDayTime);
             await context.SaveChangesAsync();
         }
 
-        public async Task PutWorkTimeRecordAsync(WorkTimePartDTO workTimePart)
+        public async Task DeleteWorkTimePartsAsync(List<int> deleteWorkTimeParts)
         {
-            var workDayTimeRecord = await context.WorkDayTimeRecords
-                .Include(wd => wd.WorkDay)
-                .FirstAsync();
+            var workDayTimeRecords = await context.WorkDayTimeRecords
+                .ToListAsync();
 
-            if (workDayTimeRecord == null)
+            foreach (var workTimePart in deleteWorkTimeParts)
             {
-                throw new ArgumentException($"WorkDayTimeRecord with ID {workTimePart.Id} not found.");
+                    // Delete the record if Delete is set to true
+                    var recordToDelete = workDayTimeRecords.First(r => r.Id == workTimePart);
+                    if (recordToDelete != null)
+                    {
+                        context.WorkDayTimeRecords.Remove(recordToDelete);
+                    }
+                
             }
-
-            workDayTimeRecord.StartTime = workTimePart.StartTime;
-            workDayTimeRecord.EndTime = workTimePart.EndTime;
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteWorkTimeRecordAsync(int id)
+        public async Task PutWorkTimePartsAsync(List<UpdateWorkTimePartsDTO> updateWorkTimeParts)
         {
-            var workDayTimeRecord = await context.WorkDayTimeRecords.FindAsync(id);
-            if (workDayTimeRecord != null)
+            var workDayTimeRecords = await context.WorkDayTimeRecords
+                .ToListAsync();
+
+            foreach (var workTimePart in updateWorkTimeParts)
             {
-                context.WorkDayTimeRecords.Remove(workDayTimeRecord);
-                await context.SaveChangesAsync();
+                if (!workTimePart.Delete)
+                {
+                    // Update the record if Delete is set to false
+                    var recordToUpdate = workDayTimeRecords.First(r => r.Id == workTimePart.Id);
+                    if (recordToUpdate != null)
+                    {
+                        recordToUpdate.StartTime = workTimePart.StartTime;
+                        recordToUpdate.EndTime = workTimePart.EndTime;
+                    }
+                }
+
             }
-            else
-            {
-                throw new ArgumentException("WorkDayTimeRecord with provided id doesn't exist!");
-            }
+            await context.SaveChangesAsync();
         }
+        
     }
+
+    
 }

@@ -6,8 +6,8 @@ namespace EduWork.Domain.Contracts
     {
         Task<List<WorkTimePartDTO>> GetWorkTimePartsForUserAsync(RequestWorkTimePartsDTO getWorkTimeParts);
         Task SetWorkTimeRecordAsync(SetWorkDayTimeDTO workDayTimeDTO);
-        Task PutWorkTimeRecordAsync(WorkTimePartDTO workTimePart);
-        Task DeleteWorkTimeRecordAsync(int id);
+        Task PutWorkTimePartsAsync(List<UpdateWorkTimePartsDTO> updateWorkTimeParts);
+        Task DeleteWorkTimePartsAsync(List<int> deleteWorkTimeParts);
         
     }
 }

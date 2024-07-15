@@ -8,14 +8,14 @@
 <div class="container">
     <div class="row g-2">
         <div style="margin-top:50px; "class="col-md-6">
-            
-                <InputWorkTimeRecord OnDateChanged="DateChanged" OnNewRecord="UpdateTable"></InputWorkTimeRecord>
+
+            <InputWorkTimeRecord OnDateChanged="DateChanged" OnNewRecord="UpdateTable"  @ref="inputWorkTimeRecord"></InputWorkTimeRecord>
             
             
         </div>
         <div style="margin-top:50px;" class=" col-md-6">
-           
-                <WorkTimeRecords request="request" @ref="child"></WorkTimeRecords>
+
+            <WorkTimeRecords request="@request" @ref="workTimeRecords"></WorkTimeRecords>
           
             
         </div>
@@ -28,7 +28,9 @@
 
 
 @code {
-    WorkTimeRecords? child;
+    WorkTimeRecords? workTimeRecords;
+    InputWorkTimeRecord? inputWorkTimeRecord;
+    //public TimeSpan time { get; set; } = TimeSpan.Zero;
     RequestWorkTimePartsDTO request = new RequestWorkTimePartsDTO
         {
             UserId = 1,
@@ -36,20 +38,20 @@
             Month = DateTime.Now.Month,
             Year = DateTime.Now.Year
         };
-    DateOnly selectedDate;
-    public async void DateChanged(DateOnly _selectedDate)
+
+    public async void DateChanged(DateOnly selectedDate)
     {
-        selectedDate = _selectedDate;
         request.UserId = 1;
         request.Day = selectedDate.Day;
         request.Month = selectedDate.Month;
         request.Year = selectedDate.Year;
-        await child!.Update();
-
+        await workTimeRecords!.Update();
+        inputWorkTimeRecord.TotalWorkTime = workTimeRecords.TotalWorkTime;
     } 
 
     public async void UpdateTable()
     {
-        await child!.Update();
+        await workTimeRecords!.Update();
+        inputWorkTimeRecord.TotalWorkTime = workTimeRecords.TotalWorkTime;
     }
 }

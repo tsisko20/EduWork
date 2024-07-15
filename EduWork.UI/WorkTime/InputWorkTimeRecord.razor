@@ -15,12 +15,14 @@
         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
                 
         <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
+
+            <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
         
-        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content; " />
-        <ValidationMessage For="@(() => workTimePart.StartTime)" />
         -
-        <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
+            <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
+        <ValidationMessage For="@(() => workTimePart.StartTime)" />
         <ValidationMessage For="@(() => workTimePart.EndTime)" />
+        <p style="color:crimson">@errorContent</p>
 
     </div>
         <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
@@ -30,7 +32,34 @@
 @code {
     [Parameter] public EventCallback<DateOnly> OnDateChanged { get; set; }
     [Parameter] public EventCallback OnNewRecord { get; set; }
+    [Parameter] public TimeSpan TotalWorkTime { get; set; } = TimeSpan.Zero;
 
+    private TimeSpan CalculateRemainingWorkTime()
+    {
+        TimeSpan eightHours = TimeSpan.FromHours(8);
+        TimeSpan time = eightHours - TotalWorkTime;
+        return time;
+    }
+
+    private void UpdateEndTime()
+    {
+        var startTime = new DateTime(1, 1, 1, workTimePart.StartTime.Hour, workTimePart.StartTime.Minute, workTimePart.StartTime.Second);
+        var endTime = startTime + CalculateRemainingWorkTime();
+        workTimePart.EndTime = new TimeOnly(endTime.Hour, endTime.Minute, endTime.Second);
+    }
+
+    private void OnStartTimeChanged(ChangeEventArgs e)
+    {
+        workTimePart.StartTime = TimeOnly.Parse(e.Value.ToString());
+        UpdateEndTime();
+    }
+
+    private void OnEndTimeChanged(ChangeEventArgs e)
+    {
+        workTimePart.EndTime = TimeOnly.Parse(e.Value.ToString());
+    }
+
+    public string? errorContent;
 
     SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
     {
@@ -52,9 +81,21 @@
     async Task saveWorkTimeRecord()
     {
         var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
-        Console.WriteLine(response.StatusCode);
-        await OnNewRecord.InvokeAsync();
+
+        if(response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Work time part added succesfully");
+            await OnNewRecord.InvokeAsync();
+            errorContent = "";
+        }
+            else
+            {
+                errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorContent);
+            }
     }
+         
+    
 
     private void ChangeDate(int change)
     {

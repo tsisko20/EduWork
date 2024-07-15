@@ -23,27 +23,34 @@ namespace EduWork.WebAPI.Controllers
             return await _workTimeService.GetWorkTimePartsForUserAsync(getWorkTimeParts);
         }
 
-        // PUT
-        [HttpPut("{workTimePart}")]
-        public async Task<IActionResult> PutWorkDayTime(WorkTimePartDTO workTimePart)
-        {         
-            await _workTimeService.PutWorkTimeRecordAsync(workTimePart);
-            return Ok();
-        }
-
         // POST
         [HttpPost]
         public async Task<ActionResult> PostWorkDayTime(SetWorkDayTimeDTO workDayTime)
         {
-            await _workTimeService.SetWorkTimeRecordAsync(workDayTime);
+            try
+            {
+                await _workTimeService.SetWorkTimeRecordAsync(workDayTime);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message); // Return a 400 Bad Request with the error message
+            }
+        }
+
+        // PUT
+        [HttpPut]
+        public async Task<IActionResult> PutWorkDayTimePartsAsync(List<UpdateWorkTimePartsDTO> workTimeParts)
+        {         
+            await _workTimeService.PutWorkTimePartsAsync(workTimeParts);
             return Ok();
         }
 
         // DELETE
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteWorkDayTime(int id)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteWorkDayTimeParts(List<int> workTimeParts)
         {
-            await _workTimeService.DeleteWorkTimeRecordAsync(id);
+            await _workTimeService.DeleteWorkTimePartsAsync(workTimeParts);
             return Ok();
         }
 

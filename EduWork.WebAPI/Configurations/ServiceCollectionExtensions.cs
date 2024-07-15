@@ -1,12 +1,16 @@
-﻿using EduWork.Data;
+﻿using EduWork.Common.DTO;
+using EduWork.Data;
 using EduWork.Domain.Authentication;
 using EduWork.Domain.Services;
 using EduWork.WebAPI.Configurations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using System.Reflection;
 
 namespace EduWork.WebAPI.Configurations
@@ -21,7 +25,20 @@ namespace EduWork.WebAPI.Configurations
                 .AddMicrosoftGraph(configuration.GetSection("MicrosoftGraph"))
                 .AddInMemoryTokenCaches();
 
-            services.AddControllers();
+            services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    var modelState = actionContext.ModelState.Values;
+                    return new BadRequestObjectResult(new ErrorModelDTO
+                    {
+                        Status = (int) HttpStatusCode.BadRequest,
+                        Title = ReasonPhrases.GetReasonPhrase((int)HttpStatusCode.BadRequest),
+                        Errors = modelState.SelectMany(x=>x.Errors, (x,y) =>y.ErrorMessage).ToList()
+
+                    });
+                };
+            });
             services.AddScoped<WorkTimeService>();
             services.AddScoped<AppRoleService>();
             services.AddScoped<Identity>();
