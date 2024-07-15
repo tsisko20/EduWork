@@ -1,7 +1,7 @@
 ﻿td, th {
     text-align: center; /* Center horizontally */
     vertical-align: middle; /* Center vertically */
-    display:table-cell;
+    display: table-cell;
 }
 
 .form-switch .form-check-input:checked {
@@ -10,7 +10,7 @@
 }
 
 
-    .form-switch .form-check-input:focus {
+.form-switch .form-check-input:focus {
     border-color: rgba(0, 0, 0, 0.25);
     outline: 0;
     box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
@@ -21,8 +21,7 @@
     display: flex;
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
-   padding-left:2.5rem;
-    
+    padding-left: 2.5rem;
 }
 
 thead {
@@ -34,11 +33,11 @@ thead {
     max-height: 300px;
 }
 
-.tableScroll thead th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-}
+    .tableScroll thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
 
 table {
     border-collapse: collapse;
@@ -54,6 +53,6 @@ th {
 }
 
 *:focus, *:active {
-    outline: none ;
-    box-shadow: none ;
+    outline: none;
+    box-shadow: none;
 }

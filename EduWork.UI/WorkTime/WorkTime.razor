@@ -1,5 +1,8 @@
 ﻿@page "/worktime"
 @using EduWork.Common.DTO
+@using Newtonsoft.Json
+@using System.Text
+@inject HttpClient Http
 
 <PageTitle>Radno vrijeme</PageTitle>
 
@@ -9,49 +12,281 @@
     <div class="row g-2">
         <div style="margin-top:50px; "class="col-md-6">
 
-            <InputWorkTimeRecord OnDateChanged="DateChanged" OnNewRecord="UpdateTable"  @ref="inputWorkTimeRecord"></InputWorkTimeRecord>
-            
-            
+            <div style="text-align:left;">
+                <h4>Unos radnog vremena:</h4>
+                <EditForm Model="workTimePart" OnValidSubmit="saveWorkTimeRecord">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group">
+                        <label for="workDate">Odaberite dan:</label> <br />
+                        <button type="button" @onclick="() => ChangeDate(-1)" class="chevron"><span><i class="fa fa-chevron-left"></i></span></button>
+
+                        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable"/>
+                        <button type="button" @onclick="() => ChangeDate(1)" class="chevron"><span><i class="fa fa-chevron-right"></i></span></button>
+                        <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
+
+                        <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
+
+                        <InputDate id="startTime" @bind-Value="_startTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;"/>
+
+                        -
+                        <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
+                        <ValidationMessage For="@(() => workTimePart.StartTime)" />
+                        <ValidationMessage For="@(() => workTimePart.EndTime)" />
+                        <p style="color:crimson">@errorContent</p>
+
+                    </div>
+                    <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
+
+                </EditForm>
+            </div>
+                   
         </div>
         <div style="margin-top:50px;" class=" col-md-6">
 
-            <WorkTimeRecords request="@request" @ref="workTimeRecords"></WorkTimeRecords>
-          
-            
-        </div>
-        
-    </div>
-    
+            <h4>Vremenski odsječci za @workTimePart.WorkDate.Day/@workTimePart.WorkDate.Month/@workTimePart.WorkDate.Year:</h4>
 
-    
+            @if (workTimeList == null)
+            {
+                <p>Učitavanje...</p>
+            }
+            else if (workTimeList.Count == 0)
+            {
+                <p>Nema vremenskih odsječaka za odabrani dan.</p>
+            }
+            else
+            {
+                <p>Ukupno odrađenih sati: @FormatTimeSpan(CalculateTotalTime())</p>
+                <div class="tableScroll">
+                    <table class="table table-bordered table-striped ">
+                        <thead class="text-white">
+                            <tr>
+                                <th>#</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Time</th>
+                                <th scope="col">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var element in updatedList)
+                            {
+                                <tr>
+                                    <td>@(updatedList.IndexOf(element) + 1)</td>
+                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" /></td>
+                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
+                                    <td>
+                                        <div class="form-check form-switch text-center">
+                                            <input @onclick="() => SetDelete(element.Id)" type="checkbox" class="form-check-input" checked="@element.Delete">
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align:center; margin-top:10px">
+                    <button type="button" @onclick="() => ApplyUpdates()" class=" btn btn-primary unfocus" style="margin-right:15px">Primjeni</button>
+                    <button type="button" class="btn btn-secondary unfocus">Odbaci</button>
+                </div>
+            }
+        </div>     
+    </div> 
 </div>
 
 
 @code {
+    public TimeSpan TotalWorkTime { get; set; } = TimeSpan.Zero;
+
+    private TimeSpan CalculateRemainingWorkTime()
+    {
+        TimeSpan eightHours = TimeSpan.FromHours(8);
+        TimeSpan time = eightHours - TotalWorkTime;
+        return time;
+    }
+
+    private void UpdateInsertTime(TimeOnly latestTime)
+    {
+        workTimePart.StartTime = latestTime;
+        var startTime = new DateTime(1, 1, 1, workTimePart.StartTime.Hour, workTimePart.StartTime.Minute, workTimePart.StartTime.Second);
+        var endTime = startTime + CalculateRemainingWorkTime();
+        if (endTime.Day != 1)
+        {
+            workTimePart.EndTime = new TimeOnly(23, 45, 00);
+        }
+        else
+        {
+            workTimePart.EndTime = new TimeOnly(endTime.Hour, endTime.Minute, endTime.Second);
+        }
+    }
+
+    public TimeOnly _startTime
+    {
+        get { return workTimePart.StartTime; }
+        set
+        {
+            workTimePart.StartTime = value;
+        }
+    }
+
+    public string? errorContent;
+
+    SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
+        {
+            WorkDate = DateOnly.FromDateTime(DateTime.Now),
+            UserId = 1,
+            StartTime = TimeOnly.FromDateTime(DateTime.Now)
+        };
+
+    async Task saveWorkTimeRecord()
+    {
+        var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Work time part added succesfully");
+            errorContent = "";
+            await UpdateTable();
+        }
+        else
+        {
+            errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(errorContent);
+        }
+    }
+
+
+
+    private async void ChangeDate(int change)
+    {
+        workTimePart.WorkDate = workTimePart.WorkDate.AddDays(change);
+        await UpdateTable();
+    }
+
     WorkTimeRecords? workTimeRecords;
     InputWorkTimeRecord? inputWorkTimeRecord;
     //public TimeSpan time { get; set; } = TimeSpan.Zero;
-    RequestWorkTimePartsDTO request = new RequestWorkTimePartsDTO
+
+
+    List<WorkTimePartDTO>? workTimeList;
+    List<UpdateWorkTimePartsDTO> updatedList = new List<UpdateWorkTimePartsDTO>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateTable();
+    }
+
+    public async Task UpdateTable()
+    {
+        try
         {
-            UserId = 1,
-            Day = DateTime.Now.Day,
-            Month = DateTime.Now.Month,
-            Year = DateTime.Now.Year
-        };
+            RequestWorkTimePartsDTO request = new RequestWorkTimePartsDTO
+                {
+                    UserId = 1,
+                    Day = workTimePart.WorkDate.Day,
+                    Month = workTimePart.WorkDate.Month,
+                    Year = workTimePart.WorkDate.Year
+                };
 
-    public async void DateChanged(DateOnly selectedDate)
-    {
-        request.UserId = 1;
-        request.Day = selectedDate.Day;
-        request.Month = selectedDate.Month;
-        request.Year = selectedDate.Year;
-        await workTimeRecords!.Update();
-        inputWorkTimeRecord.TotalWorkTime = workTimeRecords.TotalWorkTime;
-    } 
+            workTimeList = await Http.GetFromJsonAsync<List<WorkTimePartDTO>>($"api/WorkDayTimes?UserId={request.UserId}&Day={request.Day}&Month={request.Month}&Year={request.Year}");
+            updatedList.Clear();
+            TimeOnly latestTime = TimeOnly.FromDateTime(DateTime.Now);
+            foreach (var part in workTimeList)
+            {
+                if (part.EndTime >= latestTime) latestTime = part.EndTime;
 
-    public async void UpdateTable()
+                var updatePart = new UpdateWorkTimePartsDTO
+                    {
+                        Id = part.Id,
+                        StartTime = part.StartTime,
+                        EndTime = part.EndTime,
+                        WorkDate = part.WorkDate
+                    };
+                updatedList.Add(updatePart);
+            }
+            CalculateTotalTime();
+            UpdateInsertTime(latestTime);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void SetDelete(int id)
     {
-        await workTimeRecords!.Update();
-        inputWorkTimeRecord.TotalWorkTime = workTimeRecords.TotalWorkTime;
+        var item = updatedList.First(x => x.Id == id);
+        item.Delete = !item.Delete;
+    }
+
+    public TimeSpan CalculateTotalTime()
+    {
+        TotalWorkTime = TimeSpan.Zero;
+        foreach (var element in updatedList)
+        {
+            if (!element.Delete) // Consider only elements that are not marked for deletion
+            {
+                if (element?.StartTime != null && element?.EndTime != null)
+                {
+                    DateTime startDateTime = new DateTime(
+                        1, 1, 1, element.StartTime.Hour, element.StartTime.Minute, element.StartTime.Second);
+
+                    DateTime endDateTime = new DateTime(
+                        1, 1, 1, element.EndTime.Hour, element.EndTime.Minute, element.EndTime.Second);
+
+                    TotalWorkTime += endDateTime - startDateTime;
+                }
+            }
+        }
+        return TotalWorkTime;
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        TimeSpan eightHours = TimeSpan.FromHours(8);
+        return $"{(int)timeSpan.TotalHours}:{timeSpan:mm}";
+    }
+
+    private async void ApplyUpdates()
+    {
+        List<UpdateWorkTimePartsDTO> differentElements = new List<UpdateWorkTimePartsDTO>();
+        List<int> deleteElements = new List<int>();
+        foreach (var element in updatedList)
+        {
+            bool changed = false;
+            foreach (var workTime in workTimeList)
+            {
+                if (element.Id == workTime.Id && element.StartTime == workTime.StartTime && element.EndTime == workTime.EndTime)
+                {
+                    changed = true;
+                    break;
+                }
+            }
+            if (!changed)
+            {
+                differentElements.Add(element);
+            }
+            if (element.Delete)
+            {
+                deleteElements.Add(element.Id);
+                element.Delete = false;
+            }
+        }
+
+        var updateResponse = await Http.PutAsJsonAsync("api/WorkDayTimes", differentElements);
+        var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("https://localhost:7001/api/WorkDayTimes"),
+                Content = new StringContent(JsonConvert.SerializeObject(deleteElements), Encoding.UTF8, "application/json")
+            };
+        var deleteResponse = await Http.SendAsync(request);
+        //StateHasChanged();
+        await UpdateTable();
+        //string updateResponseString = updateResponse.Content.ReadAsStringAsync().ToString();
+        string mergedResponse = updateResponse.Content.ReadAsStringAsync().ToString() + "\n" + deleteResponse.Content.ReadAsStringAsync().ToString();
+
     }
 }
