@@ -21,11 +21,11 @@ namespace EduWork.Domain.Services
             if (getWorkTimeParts.Day > 0 && getWorkTimeParts.Month > 0 && getWorkTimeParts.Year > 0)
             {
                 var date = new DateOnly(getWorkTimeParts.Year ?? default(int), getWorkTimeParts.Month ?? default(int), getWorkTimeParts.Day ?? default(int));
-                query = query.Where(wdt => wdt.WorkDay.WorkDate == date);
+                query = query.Where(wdt => wdt.WorkDay.WorkDate == date).OrderBy(wdt => wdt.StartTime);
             }
             else if (getWorkTimeParts.Day == null && getWorkTimeParts.Month > 0 && getWorkTimeParts.Year > 0)
             {
-                query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year && wdt.WorkDay.WorkDate.Month == getWorkTimeParts.Month);
+                query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year && wdt.WorkDay.WorkDate.Month == getWorkTimeParts.Month ).OrderBy(wdt => wdt.StartTime); 
             }
             var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 
@@ -83,45 +83,20 @@ namespace EduWork.Domain.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteWorkTimePartsAsync(List<int> deleteWorkTimeParts)
+        public async Task DeleteWorkTimePartAsync(int id)
         {
             var workDayTimeRecords = await context.WorkDayTimeRecords
                 .ToListAsync();
 
-            foreach (var workTimePart in deleteWorkTimeParts)
-            {
-                    // Delete the record if Delete is set to true
-                    var recordToDelete = workDayTimeRecords.First(r => r.Id == workTimePart);
+                    var recordToDelete = workDayTimeRecords.First(r => r.Id == id);
                     if (recordToDelete != null)
                     {
                         context.WorkDayTimeRecords.Remove(recordToDelete);
                     }
-                
-            }
             await context.SaveChangesAsync();
         }
 
-        public async Task PutWorkTimePartsAsync(List<UpdateWorkTimePartsDTO> updateWorkTimeParts)
-        {
-            var workDayTimeRecords = await context.WorkDayTimeRecords
-                .ToListAsync();
-
-            foreach (var workTimePart in updateWorkTimeParts)
-            {
-                if (!workTimePart.Delete)
-                {
-                    // Update the record if Delete is set to false
-                    var recordToUpdate = workDayTimeRecords.First(r => r.Id == workTimePart.Id);
-                    if (recordToUpdate != null)
-                    {
-                        recordToUpdate.StartTime = workTimePart.StartTime;
-                        recordToUpdate.EndTime = workTimePart.EndTime;
-                    }
-                }
-
-            }
-            await context.SaveChangesAsync();
-        }
+       
         
     }
 

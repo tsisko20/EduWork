@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+﻿using Blazored.Toast;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Reflection.Metadata.Ecma335;
 
@@ -12,7 +13,7 @@ namespace EduWork.UI.Configurations
             var downstreamApiSettings = new DownstreamApiOptions();
             configuration.GetSection(ClientAzureAdOptions.Section).Bind(clientAzureAdOptions);
             configuration.GetSection(DownstreamApiOptions.Section).Bind(downstreamApiSettings);
-
+            services.AddBlazoredToast();
             services.AddScoped(sp =>
             {
                 var authorizationMessageHandler = sp.GetRequiredService<AuthorizationMessageHandler>();

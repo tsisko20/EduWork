@@ -3,6 +3,7 @@
 @using Newtonsoft.Json
 @using System.Text
 @inject HttpClient Http
+@inject IToastService toastService
 
 <PageTitle>Radno vrijeme</PageTitle>
 
@@ -10,7 +11,7 @@
 
 <div class="container">
     <div class="row g-2">
-        <div style="margin-top:50px; "class="col-md-6">
+        <div style="margin-top:50px;" class="col-md-6">
 
             <div style="text-align:left;">
                 <h4>Unos radnog vremena:</h4>
@@ -21,26 +22,25 @@
                         <label for="workDate">Odaberite dan:</label> <br />
                         <button type="button" @onclick="() => ChangeDate(-1)" class="chevron"><span><i class="fa fa-chevron-left"></i></span></button>
 
-                        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable"/>
+                        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable" />
                         <button type="button" @onclick="() => ChangeDate(1)" class="chevron"><span><i class="fa fa-chevron-right"></i></span></button>
                         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
 
                         <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
 
-                        <InputDate id="startTime" @bind-Value="_startTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;"/>
+                        <InputDate id="startTime" @bind-Value="_startTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
 
                         -
                         <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
                         <ValidationMessage For="@(() => workTimePart.StartTime)" />
                         <ValidationMessage For="@(() => workTimePart.EndTime)" />
-                        <p style="color:crimson">@errorContent</p>
 
                     </div>
-                    <button class="btn btn-primary" style="margin-top:15px " type="submit">Unesi</button>
+                    <button class="btn btn-primary" style="margin-top:15px" type="submit">Unesi</button>
 
                 </EditForm>
             </div>
-                   
+
         </div>
         <div style="margin-top:50px;" class=" col-md-6">
 
@@ -58,42 +58,43 @@
             {
                 <p>Ukupno odrađenih sati: @FormatTimeSpan(CalculateTotalTime())</p>
                 <div class="tableScroll">
-                    <table class="table table-bordered table-striped ">
+                    <table class="table table-bordered table-striped">
                         <thead class="text-white">
                             <tr>
                                 <th>#</th>
                                 <th scope="col">Start Time</th>
                                 <th scope="col">End Time</th>
-                                <th scope="col">Delete</th>
+                                <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var element in updatedList)
+                            @foreach (var element in workTimeList)
                             {
                                 <tr>
-                                    <td>@(updatedList.IndexOf(element) + 1)</td>
-                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" /></td>
-                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" /></td>
+                                    <td>@(workTimeList.IndexOf(element) + 1)</td>
+                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" disabled="@(!editingElements.ContainsKey(element.Id) || !editingElements[element.Id].IsEditing)" /></td>
+                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" disabled="@(!editingElements.ContainsKey(element.Id) || !editingElements[element.Id].IsEditing)" /></td>
                                     <td>
-                                        <div class="form-check form-switch text-center">
-                                            <input @onclick="() => SetDelete(element.Id)" type="checkbox" class="form-check-input" checked="@element.Delete">
-                                        </div>
-
+                                        @if (editingElements.ContainsKey(element.Id) && editingElements[element.Id].IsEditing)
+                                        {
+                                            <button class="btn btn-success" @onclick="() => applyChanges(element.Id)"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-secondary" @onclick="() => cancelEdit(element.Id)"><i class="fas fa-times"></i></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-danger" @onclick="() => deleteWorkPart(element.Id)"><i class="fas fa-trash-alt"></i></button>
+                                            <button class="btn btn-info" @onclick="() => editWorkPart(element.Id)"><i class="far fa-edit"></i></button>
+                                        }
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
-                <div style="text-align:center; margin-top:10px">
-                    <button type="button" @onclick="() => ApplyUpdates()" class=" btn btn-primary unfocus" style="margin-right:15px">Primjeni</button>
-                    <button type="button" class="btn btn-secondary unfocus">Odbaci</button>
-                </div>
             }
-        </div>     
-    </div> 
+        </div>
+    </div>
 </div>
-
 
 @code {
     public TimeSpan TotalWorkTime { get; set; } = TimeSpan.Zero;
@@ -102,6 +103,10 @@
     {
         TimeSpan eightHours = TimeSpan.FromHours(8);
         TimeSpan time = eightHours - TotalWorkTime;
+        if (TotalWorkTime > time)
+        {
+            return TimeSpan.Zero;
+        }
         return time;
     }
 
@@ -129,8 +134,6 @@
         }
     }
 
-    public string? errorContent;
-
     SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
         {
             WorkDate = DateOnly.FromDateTime(DateTime.Now),
@@ -144,18 +147,15 @@
 
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine("Work time part added succesfully");
-            errorContent = "";
             await UpdateTable();
+            toastService.ShowSuccess("Vremenski odsječak je pohranjen.");
         }
         else
         {
-            errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(errorContent);
+            var errorContent = await response.Content.ReadAsStringAsync();
+            toastService.ShowError(errorContent);
         }
     }
-
-
 
     private async void ChangeDate(int change)
     {
@@ -163,19 +163,14 @@
         await UpdateTable();
     }
 
-    WorkTimeRecords? workTimeRecords;
-    InputWorkTimeRecord? inputWorkTimeRecord;
-    //public TimeSpan time { get; set; } = TimeSpan.Zero;
-
-
     List<WorkTimePartDTO>? workTimeList;
-    List<UpdateWorkTimePartsDTO> updatedList = new List<UpdateWorkTimePartsDTO>();
-
 
     protected override async Task OnInitializedAsync()
     {
         await UpdateTable();
     }
+
+    TimeOnly latestTime = TimeOnly.FromDateTime(DateTime.Now);
 
     public async Task UpdateTable()
     {
@@ -190,20 +185,10 @@
                 };
 
             workTimeList = await Http.GetFromJsonAsync<List<WorkTimePartDTO>>($"api/WorkDayTimes?UserId={request.UserId}&Day={request.Day}&Month={request.Month}&Year={request.Year}");
-            updatedList.Clear();
             TimeOnly latestTime = TimeOnly.FromDateTime(DateTime.Now);
-            foreach (var part in workTimeList)
+            foreach (WorkTimePartDTO element in workTimeList)
             {
-                if (part.EndTime >= latestTime) latestTime = part.EndTime;
-
-                var updatePart = new UpdateWorkTimePartsDTO
-                    {
-                        Id = part.Id,
-                        StartTime = part.StartTime,
-                        EndTime = part.EndTime,
-                        WorkDate = part.WorkDate
-                    };
-                updatedList.Add(updatePart);
+                if (latestTime <= element.EndTime) latestTime = element.EndTime;
             }
             CalculateTotalTime();
             UpdateInsertTime(latestTime);
@@ -215,29 +200,20 @@
         }
     }
 
-    private void SetDelete(int id)
-    {
-        var item = updatedList.First(x => x.Id == id);
-        item.Delete = !item.Delete;
-    }
-
     public TimeSpan CalculateTotalTime()
     {
         TotalWorkTime = TimeSpan.Zero;
-        foreach (var element in updatedList)
+        foreach (var element in workTimeList)
         {
-            if (!element.Delete) // Consider only elements that are not marked for deletion
+            if (element?.StartTime != null && element?.EndTime != null)
             {
-                if (element?.StartTime != null && element?.EndTime != null)
-                {
-                    DateTime startDateTime = new DateTime(
-                        1, 1, 1, element.StartTime.Hour, element.StartTime.Minute, element.StartTime.Second);
+                DateTime startDateTime = new DateTime(
+                    1, 1, 1, element.StartTime.Hour, element.StartTime.Minute, element.StartTime.Second);
 
-                    DateTime endDateTime = new DateTime(
-                        1, 1, 1, element.EndTime.Hour, element.EndTime.Minute, element.EndTime.Second);
+                DateTime endDateTime = new DateTime(
+                    1, 1, 1, element.EndTime.Hour, element.EndTime.Minute, element.EndTime.Second);
 
-                    TotalWorkTime += endDateTime - startDateTime;
-                }
+                TotalWorkTime += endDateTime - startDateTime;
             }
         }
         return TotalWorkTime;
@@ -250,43 +226,78 @@
     }
 
     private async void ApplyUpdates()
+    { }
+
+    private Dictionary<int, (bool IsEditing, WorkTimePartDTO OriginalValue)> editingElements = new();
+
+    private void editWorkPart(int id)
     {
-        List<UpdateWorkTimePartsDTO> differentElements = new List<UpdateWorkTimePartsDTO>();
-        List<int> deleteElements = new List<int>();
-        foreach (var element in updatedList)
+        // Cancel any current edit
+        if (editingElements.Any(e => e.Value.IsEditing))
         {
-            bool changed = false;
-            foreach (var workTime in workTimeList)
-            {
-                if (element.Id == workTime.Id && element.StartTime == workTime.StartTime && element.EndTime == workTime.EndTime)
-                {
-                    changed = true;
-                    break;
-                }
-            }
-            if (!changed)
-            {
-                differentElements.Add(element);
-            }
-            if (element.Delete)
-            {
-                deleteElements.Add(element.Id);
-                element.Delete = false;
-            }
+            var currentEdit = editingElements.First(e => e.Value.IsEditing).Key;
+            cancelEdit(currentEdit);
         }
 
-        var updateResponse = await Http.PutAsJsonAsync("api/WorkDayTimes", differentElements);
-        var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Delete,
-                RequestUri = new Uri("https://localhost:7001/api/WorkDayTimes"),
-                Content = new StringContent(JsonConvert.SerializeObject(deleteElements), Encoding.UTF8, "application/json")
-            };
-        var deleteResponse = await Http.SendAsync(request);
-        //StateHasChanged();
-        await UpdateTable();
-        //string updateResponseString = updateResponse.Content.ReadAsStringAsync().ToString();
-        string mergedResponse = updateResponse.Content.ReadAsStringAsync().ToString() + "\n" + deleteResponse.Content.ReadAsStringAsync().ToString();
+        // Start new edit
+        var element = workTimeList.First(e => e.Id == id);
+        editingElements[id] = (true, new WorkTimePartDTO { Id = element.Id, StartTime = element.StartTime, EndTime = element.EndTime });
+        StateHasChanged();
+    }
 
+    private async void applyChanges(int id)
+    {
+        if (editingElements.TryGetValue(id, out var editState))
+        {
+            var element = workTimeList.First(e => e.Id == id);
+            var response = await Http.PutAsJsonAsync($"api/WorkDayTimes/", element);
+
+            if (response.IsSuccessStatusCode)
+            {
+                editingElements.Remove(id);
+                toastService.ShowSuccess("Changes applied successfully.");
+            }
+            else
+            {
+                toastService.ShowError(await response.Content.ReadAsStringAsync());
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void cancelEdit(int id)
+    {
+        if (editingElements.TryGetValue(id, out var editState))
+        {
+            var element = workTimeList.First(e => e.Id == id);
+            element.StartTime = editState.OriginalValue.StartTime;
+            element.EndTime = editState.OriginalValue.EndTime;
+
+            editingElements.Remove(id);
+            StateHasChanged();
+        }
+    }
+
+    private async void deleteWorkPart(int id)
+    {
+        var response = await Http.DeleteAsync($"api/WorkDayTimes/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var elementToRemove = workTimeList.FirstOrDefault(e => e.Id == id);
+            if (elementToRemove != null)
+            {
+                workTimeList.Remove(elementToRemove);
+                toastService.ShowSuccess("Vremenski odsječak je obrisan.");
+                await UpdateTable();
+            }
+        }
+        else
+        {
+            toastService.ShowError(await response.Content.ReadAsStringAsync());
+        }
+
+        StateHasChanged();
     }
 }

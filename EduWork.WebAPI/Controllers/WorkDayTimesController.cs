@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EduWork.Domain.Services;
 using EduWork.Common.DTO;
+using EduWork.Data.Entities;
 
 
 namespace EduWork.WebAPI.Controllers
@@ -40,18 +41,32 @@ namespace EduWork.WebAPI.Controllers
 
         // PUT
         [HttpPut]
-        public async Task<IActionResult> PutWorkDayTimePartsAsync(List<UpdateWorkTimePartsDTO> workTimeParts)
-        {         
-            await _workTimeService.PutWorkTimePartsAsync(workTimeParts);
-            return Ok();
+        public async Task<IActionResult> PutWorkDayTimePartsAsync(WorkTimePartDTO update)
+        {
+            try
+            {
+                
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message); // Return a 400 Bad Request with the error message
+            }
         }
 
         // DELETE
-        [HttpDelete]
-        public async Task<IActionResult> DeleteWorkDayTimeParts(List<int> workTimeParts)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteWorkDayTimeParts(int id)
         {
-            await _workTimeService.DeleteWorkTimePartsAsync(workTimeParts);
-            return Ok();
+            try
+            {
+                await _workTimeService.DeleteWorkTimePartAsync(id);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message); // Return a 400 Bad Request with the error message
+            }
         }
 
     }
