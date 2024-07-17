@@ -9,7 +9,7 @@
 
 			// Assert that content of the paragraph shows counter at zero
 			cut.Find("button#lijeviChevron").Click();
-			cut.Find("h4.odabraniDan")
+			cut.Find("h4#odabraniDan")
 	.MarkupMatches($"<h4 class=\"odabraniDan\" >Vremenski odsječci za {DateTime.Now.Day - 1}/{DateTime.Now.Month}/{DateTime.Now.Year}:</h4>");
 		}
 
@@ -21,7 +21,7 @@
 
 		// Assert that content of the paragraph shows counter at zero
 		cut.Find("button#desniChevron").Click();
-		cut.Find("h4.odabraniDan")
+		cut.Find("h4#odabraniDan")
 	.MarkupMatches($"<h4 class=\"odabraniDan\" >Vremenski odsječci za {DateTime.Now.Day + 1}/{DateTime.Now.Month}/{DateTime.Now.Year}:</h4>");
 	}
 }15 do 1

@@ -27,6 +27,10 @@ namespace EduWork.Domain.Services
             {
                 query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year && wdt.WorkDay.WorkDate.Month == getWorkTimeParts.Month).OrderBy(wdt => wdt.StartTime);
             }
+            else if (getWorkTimeParts.Day == null && getWorkTimeParts.Month == null && getWorkTimeParts.Year > 0)
+            {
+                query = query.Where(wdt => wdt.WorkDay.WorkDate.Year == getWorkTimeParts.Year).OrderBy(wdt => wdt.StartTime);
+            }
             var workDayTimeRecords = await query.AsNoTracking().ToListAsync();
 
 
@@ -137,6 +141,27 @@ namespace EduWork.Domain.Services
 
         }
 
+        public async Task<List<MonthlyWorkHoursDTO>> GetWorkTimePartsMonthlyAsync(WorkTimePartsMonthlyDTO request)
+        {
+            RequestWorkTimePartsDTO getWorkTimeParts = new RequestWorkTimePartsDTO
+            {
+                UserId = request.UserId,
+                Year = request.Year
+            };
+            var response = await GetWorkTimePartsForUserAsync(getWorkTimeParts);
 
+            // Group work time parts by month and sum the hours
+            var monthlyWorkHours = response
+                .GroupBy(part => part.WorkDate.Month)
+                .Select(g => new MonthlyWorkHoursDTO
+                {
+                    Month = g.Key,
+                    TotalHours = Math.Round(g.Sum(part => (part.EndTime.ToTimeSpan() - part.StartTime.ToTimeSpan()).TotalHours), 3)
+                })
+                .ToList();
+
+            return monthlyWorkHours;
+        }
     }
+
 }

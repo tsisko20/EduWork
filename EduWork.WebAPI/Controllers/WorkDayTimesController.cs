@@ -19,14 +19,14 @@ namespace EduWork.WebAPI.Controllers
 
         // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
         [HttpGet]
-        public async Task<ActionResult<List<WorkTimePartDTO>>> GetWorkDayTimeForUser([FromQuery]RequestWorkTimePartsDTO getWorkTimeParts)
+        public async Task<ActionResult<List<WorkTimePartDTO>>> GetWorkDayTimeForUserAsync([FromQuery]RequestWorkTimePartsDTO getWorkTimeParts)
         {
             return await _workTimeService.GetWorkTimePartsForUserAsync(getWorkTimeParts);
         }
 
         // POST
         [HttpPost]
-        public async Task<ActionResult> PostWorkDayTime(SetWorkDayTimeDTO workDayTime)
+        public async Task<ActionResult> PostWorkDayTimeAsync(SetWorkDayTimeDTO workDayTime)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace EduWork.WebAPI.Controllers
 
         // DELETE
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteWorkDayTimeParts(int id)
+        public async Task<IActionResult> DeleteWorkDayTimePartsAsync(int id)
         {
             try
             {
@@ -67,6 +67,13 @@ namespace EduWork.WebAPI.Controllers
             {
                 return BadRequest(ex.Message); // Return a 400 Bad Request with the error message
             }
+        }
+
+        // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
+        [HttpGet("monthly")]
+        public async Task<ActionResult<List<MonthlyWorkHoursDTO>>> GetWorkDayTimeForUser([FromQuery] WorkTimePartsMonthlyDTO getWorkTimeParts)
+        {
+            return await _workTimeService.GetWorkTimePartsMonthlyAsync(getWorkTimeParts);
         }
 
     }
