@@ -14,21 +14,26 @@
         <div style="margin-top:50px;" class="col-md-6">
 
             <div style="text-align:left;">
-                <h4>Unos radnog vremena:</h4>
-                <EditForm Model="workTimePart" OnValidSubmit="saveWorkTimeRecord">
+ 
+                    <h4>@workTimeEditorHeader</h4>
+
+                <EditForm Model="workTimePart" OnValidSubmit="@SubmitInput">
                     <DataAnnotationsValidator />
 
                     <div class="form-group">
-                        <label for="workDate">Odaberite dan:</label> <br />
-                        <button type="button" @onclick="() => ChangeDate(-1)" class="chevron left"><span><i class="fa fa-chevron-left"></i></span></button>
+                        <label for="workDate">@selectedDayLabel</label> <br />
+                        <button id="lijeviChevron" class="btn btn-secondary" hidden="@(!isNewEntry)" type="button" @onclick="() => ChangeDate(-1)"><span><i class="bi bi-chevron-left"></i></span></button>
 
-                        <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable" />
-                        <button type="button" @onclick="() => ChangeDate(1)" class="chevron right"><span><i class="fa fa-chevron-right"></i></span></button>
+                        <InputDate disabled="@dateDisabled" id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable" />
+                        
+                        <button id="desniChevron" class="btn btn-secondary" hidden="@(!isNewEntry)" type="button" @onclick="() => ChangeDate(1)"> <span><i class="bi bi-chevron-right"></i></span></button>
+                        
+                        <button class=" btn btn-secondary" hidden="@(!isNewEntry)" title="Današnji datum" type="button" @onclick="ResetSelectedDate"><i class="bi bi-clock-history"></i></button>
                         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
 
-                        <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
+                        <label style="padding-top:20px;">@changeWorkTimeLabel</label><br />
 
-                        <InputDate id="startTime" @bind-Value="_startTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
+                        <InputDate id="startTime" @bind-Value="workTimePart.StartTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
 
                         -
                         <InputDate id="endTime" @bind-Value="workTimePart.EndTime" Type="InputDateType.Time" class="form-control" style=" display:inline-block; max-width:fit-content;" />
@@ -36,7 +41,12 @@
                         <ValidationMessage For="@(() => workTimePart.EndTime)" />
 
                     </div>
-                    <button class="btn btn-primary" style="margin-top:15px" type="submit">Unesi</button>
+
+                    <button hidden="@(!isNewEntry)" class="btn btn-primary" style="margin-top:15px;" type="submit">Unesi</button>
+    
+                    <button hidden="@(isNewEntry)" class="btn btn-info" style="margin-top:15px" type="submit">Ažuriraj</button>
+                    <button hidden="@(isNewEntry)" class="btn btn-secondary" @onclick="CancelEdit" style="margin-top:15px" type="button">Odustani</button>
+                    
 
                 </EditForm>
             </div>
@@ -72,19 +82,26 @@
                             {
                                 <tr>
                                     <td>@(workTimeList.IndexOf(element) + 1)</td>
-                                    <td><InputDate @bind-Value="@element.StartTime" Type="InputDateType.Time" disabled="@(!editingElements.ContainsKey(element.Id) || !editingElements[element.Id].IsEditing)" /></td>
-                                    <td><InputDate @bind-Value="@element.EndTime" Type="InputDateType.Time" disabled="@(!editingElements.ContainsKey(element.Id) || !editingElements[element.Id].IsEditing)" /></td>
+                                    <td>@element.StartTime</td>
+                                    <td>@element.EndTime</td>
                                     <td>
-                                        @if (editingElements.ContainsKey(element.Id) && editingElements[element.Id].IsEditing)
+                                        @if (editingElement == element)
                                         {
-                                            <button class="btn btn-success" @onclick="() => applyChanges(element.Id)"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-secondary" @onclick="() => cancelEdit(element.Id)"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-primary" @onclick="() => EditWorkTimePart(element)">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-danger" @onclick="() => deleteWorkPart(element.Id)"><i class="fas fa-trash-alt"></i></button>
-                                            <button class="btn btn-info" @onclick="() => editWorkPart(element.Id)"><i class="far fa-edit"></i></button>
+                                            <button class="btn btn-info" @onclick="() => EditWorkTimePart(element)">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
                                         }
+
+                                        <button class="btn btn-danger" @onclick="() => deleteWorkTimePart(element.Id)" style="margin-left:10px">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+
                                     </td>
                                 </tr>
                             }
@@ -97,14 +114,120 @@
 </div>
 
 @code {
+    const string INSERT_TIME_HEADER = "Unos radnog vremena";
+    const string EDIT_TIME_HEADER = "Izmjena radnog vremena";
 
-    public TimeSpan TotalWorkTime { get; set; } = TimeSpan.Zero;
+    const string INSERT_TIME_P = "Unesite odsječak radnog vremena";
+    const string EDIT_TIME_P = "Izmjenite odsječak radnog vremena";
+
+    const string INSERT_DAY_LABEL = "Odaberite dan:";
+    const string EDIT_DAY_LABEL = "Odsječak pripada danu:";
+
+    private string workTimeEditorHeader = INSERT_TIME_HEADER;
+    private string changeWorkTimeLabel = INSERT_TIME_P;
+    private string selectedDayLabel = INSERT_DAY_LABEL;
+
+    public TimeSpan totalWorkTime { get; set; } = TimeSpan.Zero;
+
+    private bool isNewEntry = true;
+
+    WorkTimePartDTO editingElement = null!;
+
+    private bool dateDisabled = false;
+
+    private async void SubmitInput()
+    {
+        if(isNewEntry)
+        {
+            await SaveWorkTimeRecord();
+        }
+        else
+        {
+            UpdateWorkTimeRecord();
+        }
+    }
+
+    async Task SaveWorkTimeRecord()
+    {
+        var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await UpdateTable();
+            toastService.ShowSuccess("Vremenski odsječak je pohranjen.");
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            toastService.ShowError(errorContent);
+        }
+    }
+
+    private async void UpdateWorkTimeRecord()
+    {
+        UpdateWorkTimePartDTO update = new UpdateWorkTimePartDTO
+                {
+                    Id = editingElement.Id,
+                    StartTime = workTimePart.StartTime,
+                    EndTime = workTimePart.EndTime,
+                    UserId = 1,
+                    WorkDate = workTimePart.WorkDate
+                };
+        var response = await Http.PutAsJsonAsync($"api/WorkDayTimes/", update);
+
+        if (response.IsSuccessStatusCode)
+        {
+            toastService.ShowSuccess("Changes applied successfully.");
+            CancelEdit();
+        } 
+        else  
+        {   
+            toastService.ShowError(await response.Content.ReadAsStringAsync());
+        }  
+        await UpdateTable();
+    }
+
+    private void EditWorkTimePart(WorkTimePartDTO element)
+    {
+        // Start new edit
+        if (editingElement == element)
+        {
+            CancelEdit();
+            return;
+        }
+
+        editingElement = element;
+        isNewEntry = false;
+        workTimeEditorHeader = EDIT_TIME_HEADER;
+        changeWorkTimeLabel = EDIT_TIME_P;
+        dateDisabled = true;
+        selectedDayLabel = EDIT_DAY_LABEL;
+
+        workTimePart.StartTime = element.StartTime;
+        workTimePart.EndTime = element.EndTime;
+    }
+
+    private void CancelEdit()
+    {
+        editingElement = null!;
+        isNewEntry = true;
+        workTimeEditorHeader = INSERT_TIME_HEADER;
+        changeWorkTimeLabel = INSERT_TIME_P;
+        dateDisabled = false;
+        selectedDayLabel = INSERT_DAY_LABEL;
+    }
+
+    private async void ResetSelectedDate()
+    {
+        workTimePart.WorkDate = DateOnly.FromDateTime(DateTime.Now);
+        await UpdateTable();
+    }
 
     private TimeSpan CalculateRemainingWorkTime()
     {
         TimeSpan eightHours = TimeSpan.FromHours(8);
-        TimeSpan time = eightHours - TotalWorkTime;
-        if (TotalWorkTime > eightHours)
+        TimeSpan time = eightHours - totalWorkTime;
+        if (totalWorkTime > eightHours)
         {
             return TimeSpan.Zero;
         }
@@ -126,37 +249,12 @@
         }
     }
 
-    public TimeOnly _startTime
-    {
-        get { return workTimePart.StartTime; }
-        set
-        {
-            workTimePart.StartTime = value;
-        }
-    }
-
     SetWorkDayTimeDTO workTimePart = new SetWorkDayTimeDTO
         {
             WorkDate = DateOnly.FromDateTime(DateTime.Now),
             UserId = 1,
             StartTime = TimeOnly.FromDateTime(DateTime.Now)
         };
-
-    async Task saveWorkTimeRecord()
-    {
-        var response = await Http.PostAsJsonAsync("api/WorkDayTimes", workTimePart);
-
-        if (response.IsSuccessStatusCode)
-        {
-            await UpdateTable();
-            toastService.ShowSuccess("Vremenski odsječak je pohranjen.");
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            toastService.ShowError(errorContent);
-        }
-    }
 
     private async void ChangeDate(int change)
     {
@@ -203,7 +301,7 @@
 
     public TimeSpan CalculateTotalTime()
     {
-        TotalWorkTime = TimeSpan.Zero;
+        totalWorkTime = TimeSpan.Zero;
         foreach (var element in workTimeList)
         {
             if (element?.StartTime != null && element?.EndTime != null)
@@ -214,10 +312,10 @@
                 DateTime endDateTime = new DateTime(
                     1, 1, 1, element.EndTime.Hour, element.EndTime.Minute, element.EndTime.Second);
 
-                TotalWorkTime += endDateTime - startDateTime;
+                totalWorkTime += endDateTime - startDateTime;
             }
         }
-        return TotalWorkTime;
+        return totalWorkTime;
     }
 
     private string FormatTimeSpan(TimeSpan timeSpan)
@@ -229,65 +327,7 @@
     private async void ApplyUpdates()
     { }
 
-    private Dictionary<int, (bool IsEditing, WorkTimePartDTO OriginalValue)> editingElements = new();
-
-    private void editWorkPart(int id)
-    {
-        // Cancel any current edit
-        if (editingElements.Any(e => e.Value.IsEditing))
-        {
-            var currentEdit = editingElements.First(e => e.Value.IsEditing).Key;
-            cancelEdit(currentEdit);
-        }
-
-        // Start new edit
-        var element = workTimeList.First(e => e.Id == id);
-        editingElements[id] = (true, new WorkTimePartDTO { Id = element.Id, StartTime = element.StartTime, EndTime = element.EndTime });
-        StateHasChanged();
-    }
-
-    private async void applyChanges(int id)
-    {
-        if (editingElements.TryGetValue(id, out var editState))
-        {
-            var element = workTimeList.First(e => e.Id == id);
-            UpdateWorkTimePartDTO update = new UpdateWorkTimePartDTO
-                {
-                    Id = element.Id,
-                    StartTime = element.StartTime,
-                    EndTime = element.EndTime,
-                    UserId = 1,
-                    WorkDate = element.WorkDate
-                };
-            var response = await Http.PutAsJsonAsync($"api/WorkDayTimes/", update);
-
-            if (response.IsSuccessStatusCode)
-            {
-                editingElements.Remove(id);
-                toastService.ShowSuccess("Changes applied successfully.");
-            }
-            else
-            {
-                toastService.ShowError(await response.Content.ReadAsStringAsync());
-            }
-            await UpdateTable();
-        }
-    }
-
-    private void cancelEdit(int id)
-    {
-        if (editingElements.TryGetValue(id, out var editState))
-        {
-            var element = workTimeList.First(e => e.Id == id);
-            element.StartTime = editState.OriginalValue.StartTime;
-            element.EndTime = editState.OriginalValue.EndTime;
-
-            editingElements.Remove(id);
-            StateHasChanged();
-        }
-    }
-
-    private async void deleteWorkPart(int id)
+    private async void deleteWorkTimePart(int id)
     {
         var response = await Http.DeleteAsync($"api/WorkDayTimes/{id}");
 
