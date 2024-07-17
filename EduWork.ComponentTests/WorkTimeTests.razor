@@ -1,0 +1,26 @@
+﻿@inherits BunitContext
+
+@code{
+		[Fact]
+		public void DateInputDecreasesWhenLeftButtonClicked()
+		{
+		Services.AddSingleton<Blazored.Toast.Services.IToastService, Blazored.Toast.Services.ToastService>();
+			var cut = Render(@<EduWork.UI.WorkTime.WorkTime/>);
+
+			// Assert that content of the paragraph shows counter at zero
+			cut.Find("button.left").Click();
+			cut.Find("h4.odabraniDan")
+	.MarkupMatches($"<h4 class=\"odabraniDan\" >Vremenski odsječci za {DateTime.Now.Day - 1}/{DateTime.Now.Month}/{DateTime.Now.Year}:</h4>");
+		}
+
+	public void DateInputIncreasesWhenRightButtonClicked()
+	{
+		Services.AddSingleton<Blazored.Toast.Services.IToastService, Blazored.Toast.Services.ToastService>();
+		var cut = Render(@<EduWork.UI.WorkTime.WorkTime />);
+
+		// Assert that content of the paragraph shows counter at zero
+		cut.Find("button.right").Click();
+		cut.Find("h4.odabraniDan")
+	.MarkupMatches($"<h4 class=\"odabraniDan\" >Vremenski odsječci za {DateTime.Now.Day + 1}/{DateTime.Now.Month}/{DateTime.Now.Year}:</h4>");
+	}
+}

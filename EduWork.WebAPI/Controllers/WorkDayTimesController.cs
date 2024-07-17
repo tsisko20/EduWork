@@ -41,11 +41,11 @@ namespace EduWork.WebAPI.Controllers
 
         // PUT
         [HttpPut]
-        public async Task<IActionResult> PutWorkDayTimePartsAsync(WorkTimePartDTO update)
+        public async Task<IActionResult> PutWorkDayTimePartsAsync(UpdateWorkTimePartDTO update)
         {
             try
             {
-                
+                await _workTimeService.UpdateWorkTimePartAsync(update);
                 return Ok();
             }
             catch (ArgumentException ex)

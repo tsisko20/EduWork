@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace EduWork.Common.DTO
 {
-    public record UpdateWorkTimePartDTO
+    public record UpdateWorkTimePartDTO : WorkTimePartDTO
     {
-        public int WorkTimePartId { get; set; } 
-        public TimeOnly StartTime { get; set;}
-        public TimeOnly EndTime { get; set;}
+        public int UserId { get; set; } 
     }
 }

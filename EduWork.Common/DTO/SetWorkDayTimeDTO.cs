@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EduWork.Common.DTO
 {
-    public class SetWorkDayTimeDTO
+    public record SetWorkDayTimeDTO
     {
         public int UserId { get; set; }
         [Required]

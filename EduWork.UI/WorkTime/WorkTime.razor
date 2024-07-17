@@ -20,10 +20,10 @@
 
                     <div class="form-group">
                         <label for="workDate">Odaberite dan:</label> <br />
-                        <button type="button" @onclick="() => ChangeDate(-1)" class="chevron"><span><i class="fa fa-chevron-left"></i></span></button>
+                        <button type="button" @onclick="() => ChangeDate(-1)" class="chevron left"><span><i class="fa fa-chevron-left"></i></span></button>
 
                         <InputDate id="workDate" @bind-Value="workTimePart.WorkDate" class="form-control" style="display:inline-block; max-width:fit-content;" @onblur="UpdateTable" />
-                        <button type="button" @onclick="() => ChangeDate(1)" class="chevron"><span><i class="fa fa-chevron-right"></i></span></button>
+                        <button type="button" @onclick="() => ChangeDate(1)" class="chevron right"><span><i class="fa fa-chevron-right"></i></span></button>
                         <ValidationMessage For="@(() => workTimePart.WorkDate)" /><br />
 
                         <label style="padding-top:20px;">Unesite odsječak radnog vremena:</label><br />
@@ -44,7 +44,7 @@
         </div>
         <div style="margin-top:50px;" class=" col-md-6">
 
-            <h4>Vremenski odsječci za @workTimePart.WorkDate.Day/@workTimePart.WorkDate.Month/@workTimePart.WorkDate.Year:</h4>
+            <h4 class="odabraniDan">Vremenski odsječci za @workTimePart.WorkDate.Day/@workTimePart.WorkDate.Month/@workTimePart.WorkDate.Year:</h4>
 
             @if (workTimeList == null)
             {
@@ -97,13 +97,14 @@
 </div>
 
 @code {
+
     public TimeSpan TotalWorkTime { get; set; } = TimeSpan.Zero;
 
     private TimeSpan CalculateRemainingWorkTime()
     {
         TimeSpan eightHours = TimeSpan.FromHours(8);
         TimeSpan time = eightHours - TotalWorkTime;
-        if (TotalWorkTime > time)
+        if (TotalWorkTime > eightHours)
         {
             return TimeSpan.Zero;
         }
@@ -250,7 +251,15 @@
         if (editingElements.TryGetValue(id, out var editState))
         {
             var element = workTimeList.First(e => e.Id == id);
-            var response = await Http.PutAsJsonAsync($"api/WorkDayTimes/", element);
+            UpdateWorkTimePartDTO update = new UpdateWorkTimePartDTO
+                {
+                    Id = element.Id,
+                    StartTime = element.StartTime,
+                    EndTime = element.EndTime,
+                    UserId = 1,
+                    WorkDate = element.WorkDate
+                };
+            var response = await Http.PutAsJsonAsync($"api/WorkDayTimes/", update);
 
             if (response.IsSuccessStatusCode)
             {
@@ -261,8 +270,7 @@
             {
                 toastService.ShowError(await response.Content.ReadAsStringAsync());
             }
-
-            StateHasChanged();
+            await UpdateTable();
         }
     }
 
@@ -297,7 +305,5 @@
         {
             toastService.ShowError(await response.Content.ReadAsStringAsync());
         }
-
-        StateHasChanged();
     }
 }
