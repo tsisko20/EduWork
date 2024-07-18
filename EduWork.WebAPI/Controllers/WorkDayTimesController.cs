@@ -71,9 +71,22 @@ namespace EduWork.WebAPI.Controllers
 
         // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
         [HttpGet("monthly")]
-        public async Task<ActionResult<List<MonthlyWorkHoursDTO>>> GetWorkDayTimeForUser([FromQuery] WorkTimePartsMonthlyDTO getWorkTimeParts)
+        public async Task<ActionResult<List<MonthlyWorkHoursDTO>>> GetWorkDayTimeMonthlyAsync([FromQuery] RequestWorkTimePartsDTO getWorkTimeParts)
         {
             return await _workTimeService.GetWorkTimePartsMonthlyAsync(getWorkTimeParts);
+        }
+
+        // GET: api/WorkDayTimes?userId=1&d=21&m=8&y=2007
+        [HttpGet("weekly")]
+        public async Task<ActionResult<List<WeeklyWorkHoursDTO>>> GetWorkDayTimeWeeklyAsync([FromQuery] RequestWorkTimePartsDTO getWorkTimeParts)
+        {
+            return await _workTimeService.GetWorkTimePartsWeeklyAsync(getWorkTimeParts);
+        }
+
+        [HttpGet("holidays")]
+        public async Task<ActionResult<List<NonWorkingDay>>> GetHolidays()
+        {
+            return await _workTimeService.GetNonWorkingDays();
         }
 
     }
